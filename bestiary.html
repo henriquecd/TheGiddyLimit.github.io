@@ -4,20 +4,31 @@
 <head>
 	<!--5ETOOLS_VERSION-->
 	<meta charset="utf-8">
+	<meta name="description" content="">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<title>Bestiary - 5etools</title>
 
 	<link rel="stylesheet" href="css/bootstrap.css">
+	<link rel="stylesheet" href="css/jquery-ui.css">
+	<link rel="stylesheet" href="css/jquery-ui-slider-pips.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="icon" href="favicon.png">
 
-	<style id="dynamicStyle"></style> <!-- populated with JS -->
-
-	<script type="text/javascript" src="lib/js-cookie.js"></script>
 	<script type="text/javascript" src="js/styleswitch.js"></script>
 	<script type="text/javascript" src="js/navigation.js"></script>
+
+	<style>
+		img.token {
+			font-size: 1.6em;
+			right: 0.4em;
+		}
+
+		#wrp-profbonusdice {
+			display: inline-block;
+		}
+	</style>
 </head>
 
 <body>
@@ -39,181 +50,167 @@
 			<div class="input-group" id="filter-search-input-group">
 				<input type="search" id="search" class="search form-control" placeholder="Find monster...">
 				<span class="input-group-btn">
-						<button class="btn btn-default" type="button" id="reset">Reset</button>
+						<button class="btn btn-default" id="reset">Reset</button>
 					</span>
 			</div>
 
 			<div id="filtertools" class="sortlabel btn-group">
-				<button class="col-xs-4 col-xs-4-2 sort btn btn-default btn-xs" type="button" data-sort="name">Name
-				</button>
-				<button class="col-xs-2 sort btn btn-default btn-xs" type="button" data-sort="source">
-					Source
-				</button>
-				<button class="col-xs-4 col-xs-4-1 sort btn btn-default btn-xs" type="button" data-sort="type">Type
-				</button>
-				<button class="col-xs-1 col-xs-1-7 sort btn btn-default btn-xs" type="button" data-sort="cr">CR</button>
+				<button class="col-4-2 sort btn btn-default btn-xs" data-sort="name">Name <span class="caret_wrp"></span></button>
+				<button class="col-2 sort btn btn-default btn-xs" data-sort="source">Source <span class="caret_wrp"></span></button>
+				<button class="col-4-1 sort btn btn-default btn-xs" data-sort="type">Type <span class="caret_wrp"></span></button>
+				<button class="col-1-7 sort btn btn-default btn-xs" data-sort="cr">CR  <span class="caret_wrp"></span></button>
 			</div>
 
 			<ul class="list monsters">
 				<!-- populate with JS -->
 			</ul>
-
-			<div class="monster-disclaimer">Content tagged with "3pp" is third-party content from books such as Kobold
-				Press' <em>Tome of Beasts</em>. Use at your own risk.
-			</div>
 		</div>
 
 		<div id="contentwrapper" class="view-col">
-			<table id="pagecontent" class="stats monster">
-				<tr>
-					<th class="border" colspan="6"></th>
-				</tr>
-				<tr>
-					<th class="name" colspan="6">Name <span class="source" title="Source book">SRC</span></th>
-				</tr>
-				<tr>
-					<td id="sizetypealignment" colspan="6"><span id="size">Size</span> <span id="type">type</span>,
-						<span id="alignment">alignment</span></td>
-				</tr>
-				<tr>
-					<td class="divider" colspan="6">
-						<div></div>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Armor Class</strong> <span id="ac">## (source)</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Hit Points</strong> <span id="hp">hp</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Speed</strong> <span id="speed">30 ft.</span></td>
-				</tr>
-				<tr>
-					<td class="divider" colspan="6">
-						<div></div>
-					</td>
-				</tr>
-				<tr id="abilitynames">
-					<th>STR</th>
-					<th>DEX</th>
-					<th>CON</th>
-					<th>INT</th>
-					<th>WIS</th>
-					<th>CHA</th>
-				</tr>
-				<tr id="abilityscores">
-					<td id="str"><span class="score">10</span> (<span class="mod">0</span>)</td>
-					<td id="dex"><span class="score">10</span> (<span class="mod">0</span>)</td>
-					<td id="con"><span class="score">10</span> (<span class="mod">0</span>)</td>
-					<td id="int"><span class="score">10</span> (<span class="mod">0</span>)</td>
-					<td id="wis"><span class="score">10</span> (<span class="mod">0</span>)</td>
-					<td id="cha"><span class="score">10</span> (<span class="mod">0</span>)</td>
-				</tr>
-				<tr>
-					<td class="divider" colspan="6">
-						<div></div>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Saving Throws</strong> <span id="saves">Str +0</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Skills</strong> <span id="skills">Perception +0</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Damage Vulnerabilities</strong> <span id="dmgvuln">fire</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Damage Resistances</strong> <span id="dmgres">cold</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Damage Immunities</strong> <span id="dmgimm">lightning</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Condition Immunities</strong> <span id="conimm">exhaustion</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Senses</strong> <span id="senses">darkvision 30 ft.</span> passive
-						Perception <span id="pp">10</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Languages</strong> <span id="languages">Common</span></td>
-				</tr>
-				<tr>
-					<td colspan="6"><strong>Challenge</strong> <span id="cr">1</span> (<span id="xp">450</span> XP)</td>
-				</tr>
-				<tr id="traits">
-					<td class="divider" colspan="6">
-						<div></div>
-					</td>
-				</tr>
-				<tr class="trait">
-					<td colspan="6"><span class="name">Trait.</span> <span class="content">Content.</span></td>
-				</tr>
-				<tr id="actions">
-					<td colspan="6"><span>Actions</span></td>
-				</tr>
-				<tr class="action">
-					<td colspan="6"><span class="name">Action.</span> <span class="content">Content.</span></td>
-				</tr>
-				<tr id="reactions">
-					<td colspan="6"><span>Reactions</span></td>
-				</tr>
-				<tr class="reaction">
-					<td colspan="6"><span class="name">Reaction.</span> <span class="content">Content.</span></td>
-				</tr>
-				<tr id="legendaries">
-					<td colspan="6"><span>Legendary Actions</span></td>
-				</tr>
-				<tr class="legendary">
-					<td colspan="6"><span class="name">Action.</span> <span class="content">Content.</span></td>
-				</tr>
-				<tr id="lairactions">
-					<td colspan="6"><span>Lair Actions</span></td>
-				</tr>
-				<tr class="lairaction">
-					<td colspan="6"><span class="name">Action.</span> <span class="content">Content.</span></td>
-				</tr>
-				<tr id="regionaleffects">
-					<td colspan="6"><span>Regional Effects</span></td>
-				</tr>
-				<tr class="regionaleffect">
-					<td colspan="6"><span class="name">Effect.</span> <span class="content">Content.</span></td>
-				</tr>
-				<tr id="variants"></tr>
-				<tr id="source"></tr>
-				<tr>
-					<th class="border" colspan="6"></th>
-				</tr>
-			</table>
-			<div id="output"></div>
-			<br>
-			<div class="col-xs-12">
-				<button class="btn btn-block btn-default btn-xs" type="button" id="profbonusdice"
-						title="WARNING: Very experimental &mdash; use with caution">Use Proficiency Dice
-				</button>
+			<div class="ecgen__visible mb-4">
+				<div class="row">
+					<div class="col-12 text-align-right">
+						<div class="btn-group">
+							<button class="btn btn-info ecgen_rng" data-mode="medium">Random Medium</button>
+							<button class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
+								<li class="ecgen_rng_easy"><a href="#">Random Easy</a></li>
+								<li class="ecgen_rng_medium"><a href="#">Random Medium</a></li>
+								<li class="ecgen_rng_hard"><a href="#">Random Hard</a></li>
+								<li class="ecgen_rng_deadly"><a href="#">Random Deadly</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="sublistcontainer" class="sublist sublist--resizable">
+				<div id="sublistsort" class="sortlabel btn-group">
+					<button class="col-5 sort btn btn-default btn-xs" data-sort="name">Name</button>
+					<button class="col-3 sort btn btn-default btn-xs ecgen__hidden" data-sort="type">Type</button>
+					<button class="col-3 sort btn btn-default btn-xs ecgen__visible" disabled>&nbsp;</button>
+					<button class="col-2 sort btn btn-default btn-xs" data-sort="cr">CR</button>
+					<button class="col-2 sort btn btn-default btn-xs" data-sort="count">Number</button>
+				</div>
+				<ul class="list submonsters">
+					<!-- populate with JS -->
+				</ul>
+				<div class="row ecgen__hidden">
+					<span class="col-7 text-align-right">Total:</span>
+					<span class="col-5 no-wrap" id="totalcr" style="padding-left: 1px"></span>
+				</div>
+			</div>
+
+			<div id="stat-tabs" class="wrp-stat-tab ecgen__hidden">
+				<div id="tabs-right"></div>
+			</div>
+
+			<div id="float-token" class="ecgen__hidden" style="position: relative;"></div>
+
+			<div id="wrp-pagecontent" class="wrp-stats-table ecgen__hidden" onscroll="handleStatblockScroll(event, this)">
+				<table id="pagecontent" class="stats monster">
+					<tr><th class="border" colspan="6"></th></tr>
+					<tr><td colspan="6" class="initial-message">Loading...</td></tr>
+					<tr><th class="border" colspan="6"></th></tr>
+				</table>
+			</div>
+
+			<div class="text-align-center wrp-footer-buttons ecgen__hidden">
+				<button class="btn btn-success btn-xs" id="btn-encounterbuild">Encounter Builder</button>
+				<div id="wrp-profbonusdice" class=>
+					<button class="btn btn-default btn-xs" id="profbonusdice"
+							title="WARNING: Very experimental &mdash; use with caution">Use Proficiency Dice
+					</button>
+				</div>
+				<button class="btn btn-default btn-xs" id="btn-printbook">Printer View</button>
+				<button class="btn btn-default btn-xs btn-file btn-info" id="manage-brew">Manage Homebrew</button>
+			</div>
+
+			<div class="ecgen__visible">
+				<h3>Group Info</h3>
+				<div class="row">
+					<!-- LHS -->
+					<div class="col-6">
+						<div class="row">
+							<div class="col-3">Players:</div>
+							<div class="col-3">Level:</div>
+						</div>
+
+
+						<div class="row ecgen__wrp_add_players">
+							<div class="col-12">
+								<button class="btn btn-info btn-xs ecgen__add_players">
+									<span class="glyphicon glyphicon-plus"></span> Add Another Level
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- RHS -->
+					<div class="col-6 text-align-right">
+						<div class="ecgen__easy">Easy: ? XP</div>
+						<div class="ecgen__medium">Medium: ? XP</div>
+						<div class="ecgen__hard">Hard: ? XP</div>
+						<div class="ecgen__deadly">Deadly: ? XP</div>
+						<br>
+						<div class="ecgen__daily_budget">Daily Budget: ? XP</div>
+					</div>
+				</div>
+
+				<hr class="ecgen__req_creatures">
+				<div class="row ecgen__req_creatures">
+					<!-- LHS -->
+					<div class="col-6">
+						<h3 class="ecgen__rating">Difficulty: ?</h3>
+					</div>
+
+					<!-- RHS -->
+					<div class="col-6 text-align-right">
+						<h4 class="ecgen__raw_total">Total XP: ?</h4>
+						<div><i class="ecgen__raw_per_player">(? per player)</i></div>
+						<div><span class="glyphicon glyphicon-info-sign ecgen__adjusted_total_info"></span> <h4 class="inline-block ecgen__adjusted_total">Adjusted XP: ?</h4></div>
+						<div><i class="ecgen__adjusted_per_player">(? per player)</i></div>
+					</div>
+				</div>
+
+				<hr>
+				<div class="row">
+					<div class="col-12 flex" style="justify-content: center">
+						<button class="btn btn-primary btn-xs mr-2 ecgen__sv_url">Save to URL</button>
+						<div style="width: 10px; height: 1px;"></div>
+						<button class="btn btn-primary btn-xs mr-2 ecgen__sv_file">Save to File</button>
+						<button class="btn btn-primary btn-xs mr-2 ecgen__ld_file">Load from File</button>
+						<div style="width: 10px; height: 1px;"></div>
+						<button class="btn btn-danger btn-xs ecgen__reset">Reset</button>
+					</div>
+				</div>
+
+				<hr>
+				<div class="row">
+					<div class="col-12">
+						<button class="btn btn-default btn-xs ecgen__visible" style="margin: 0 auto;" id="btn-encounterstatblock">Back to Statblocks</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>    <!--5ETOOLS_SCRIPT_ANCHOR-->
 <script type="text/javascript" src="lib/jquery.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.js"></script>
+<script type="text/javascript" src="lib/jquery-ui-slider-pip.js"></script>
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="lib/localforage.js"></script>
+<script type="text/javascript" src="js/omnidexer.js"></script>
 <script type="text/javascript" src="js/omnisearch.js"></script>
 <script type="text/javascript" src="js/history.js"></script>
 <script type="text/javascript" src="js/multisource.js"></script>
-<script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/filter.js"></script>
 <script type="text/javascript" src="js/entryrender.js"></script>
+<script type="text/javascript" src="js/scalecreature.js"></script>
 <script type="text/javascript" src="js/bestiary.js"></script>
-<script type="text/javascript" src="lib/droll.js"></script>
 <script type="text/javascript" src="lib/list.js"></script>
-<script type="text/javascript" src="lib/bootstrap.js"></script>
 <script type="text/javascript" src="lib/elasticlunr.js"></script>
-<script type="text/javascript">
-	imgError = function (x) {
-		$(x).closest("th").css("padding-right", "0.2em");
-		$(x).remove();
-	};
-</script>
 </body>
 </html>

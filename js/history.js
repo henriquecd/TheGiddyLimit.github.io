@@ -1,94 +1,146 @@
 "use strict";
 
-function hashchange (e) {
-	if (isHistorySuppressed) {
-		setSuppressHistory(false);
-		return;
+class History {
+	static hashChange (forceLoad) {
+		if (History.isHistorySuppressed) {
+			History.setSuppressHistory(false);
+			return;
+		}
+
+		const [link, ...sub] = History._getHashParts();
+
+		let blankFilterLoad = false;
+		if (link !== History.lastLoadedLink || sub.length === 0 || forceLoad) {
+			History.lastLoadedLink = link;
+			if (link === HASH_BLANK) {
+				blankFilterLoad = true;
+			} else {
+				const $el = History._getListElem(link);
+				if ($el === undefined) {
+					if (typeof handleUnknownHash === "function" && window.location.hash.length) {
+						handleUnknownHash(link, sub);
+						return;
+					} else {
+						History._freshLoad();
+						return;
+					}
+				}
+				const toLoad = $el.attr("id");
+				if (toLoad === undefined) History._freshLoad();
+				else {
+					const id = $el.attr("id");
+					History.lastLoadedId = id;
+					loadhash(id);
+					document.title = decodeURIComponent($el.attr("title")) + " - 5etools";
+				}
+			}
+		}
+
+		if (typeof loadsub === "function" && (sub.length > 0 || forceLoad)) loadsub(sub);
+		if (blankFilterLoad) {
+			History._freshLoad();
+		}
 	}
 
-	const [link, ...sub] = _getHashParts();
-
-	let blankFilterLoad = false;
-	if (!e || sub.length === 0) {
-		if (link === HASH_BLANK) {
-			blankFilterLoad = true;
+	static init (initialLoadComplete) {
+		window.onhashchange = History.hashChange;
+		if (window.location.hash.length) {
+			History.hashChange();
 		} else {
-			const $el = _getListElem(link);
-			if ($el === undefined) {
-				if (typeof handleUnknownHash === "function" && window.location.hash.length) {
-					handleUnknownHash(link, sub);
-					return;
-				} else {
-					_freshLoad();
-					return;
-				}
-			}
-			const toLoad = $el.attr("id");
-			if (toLoad === undefined) _freshLoad();
-			else {
-				loadhash($el.attr("id"));
-				document.title = decodeURIComponent($el.attr("title")) + " - 5etools";
-			}
+			History._freshLoad();
 		}
+		if (initialLoadComplete) History.initialLoad = false;
 	}
 
-	if (typeof loadsub === "function" && sub.length > 0) loadsub(sub);
-	if (blankFilterLoad) {
-		window.location.hash = "";
+	/**
+	 * Allows the hash to be modified without triggering a hashchange
+	 * @param val
+	 */
+	static setSuppressHistory (val) {
+		History.isHistorySuppressed = val;
 	}
-}
 
-function initHistory () {
-	window.onhashchange = hashchange;
-	if (window.location.hash.length) {
-		hashchange();
-	} else {
-		_freshLoad();
+	static getSelectedListElement () {
+		const [link, ...sub] = History._getHashParts();
+		return History._getListElem(link);
 	}
-}
 
-let isHistorySuppressed = false;
-/**
- * Allows the hash to be modified without triggering a hashchange
- * @param val
- */
-function setSuppressHistory (val) {
-	isHistorySuppressed = val;
-}
+	static getSelectedListElementWithIndex () {
+		const [link, ...sub] = History._getHashParts();
+		return History._getListElem(link, true);
+	}
 
-function getSelectedListElement () {
-	const [link, ...sub] = _getHashParts();
-	return _getListElem(link);
-}
+	static _getHashParts () {
+		return window.location.hash.slice(1).toLowerCase().replace(/%27/g, "'").split(HASH_PART_SEP);
+	}
 
-function getSelectedListElementWithIndex () {
-	const [link, ...sub] = _getHashParts();
-	return _getListElem(link, true);
-}
-
-function _getHashParts () {
-	return window.location.hash.slice(1).split(HASH_PART_SEP);
-}
-
-function _getListElem (link, getIndex) {
-	const toFind = `a[href="#${link.toLowerCase()}"]`;
-	const listWrapper = $("#listcontainer");
-	if (listWrapper.data("lists")) {
-		for (let x = 0; x < listWrapper.data("lists").length; ++x) {
-			const list = listWrapper.data("lists")[x];
-			for (let y = 0; y < list.visibleItems.length; ++y) {
-				const item = list.visibleItems[y];
-				const $elm = $(item.elm).find(toFind);
-				if ($elm[0]) {
-					if (getIndex) return {$el: $elm, x: x, y: y};
-					return $elm
+	static _getListElem (link, getIndex) {
+		const toFind = `a[href="#${link.toLowerCase()}"]`;
+		const listWrapper = $("#listcontainer");
+		if (listWrapper.data("lists")) {
+			for (let x = 0; x < listWrapper.data("lists").length; ++x) {
+				const list = listWrapper.data("lists")[x];
+				for (let y = 0; y < list.items.length; ++y) {
+					const item = list.items[y];
+					const $elm = $(item.elm).find(toFind);
+					if ($elm[0]) {
+						if (getIndex) return {$el: $elm, x: x, y: y};
+						return $elm
+					}
 				}
 			}
 		}
+		return undefined;
 	}
-	return undefined;
-}
 
-function _freshLoad () {
-	location.replace($("#listcontainer").find(".list a").attr('href'));
+	static _freshLoad () {
+		// defer this, in case the list needs to filter first
+		setTimeout(() => {
+			const goTo = $("#listcontainer").find(".list a").attr('href');
+			if (goTo) {
+				const parts = location.hash.split(HASH_PART_SEP);
+				const fullHash = `${goTo}${parts.length > 1 ? `${HASH_PART_SEP}${parts.slice(1).join(HASH_PART_SEP)}` : ""}`;
+				location.replace(fullHash);
+			}
+		}, 1);
+	}
+
+	static cleanSetHash (toSet) {
+		window.location.hash = toSet.replace(/,+/g, ",").replace(/,$/, "").toLowerCase();
+	}
+
+	static getHashSource () {
+		const [link, ...sub] = History._getHashParts();
+		// by convention, the source is the last hash segment
+		return link ? link.split(HASH_LIST_SEP).last() : null;
+	}
+
+	static getSubHash (key) {
+		const [link, ...sub] = History._getHashParts();
+		const hKey = `${key}${HASH_SUB_KV_SEP}`;
+		const part = sub.find(it => it.startsWith(hKey));
+		if (part) return part.slice(hKey.length);
+		return null;
+	}
+
+	/**
+	 * Sets a subhash with the key specified, overwriting any existing.
+	 * @param key Subhash key.
+	 * @param val Subhash value. Passing a nully object removes the k/v pair.
+	 */
+	static setSubhash (key, val) {
+		const [link, ...sub] = History._getHashParts();
+		if (!link) History.cleanSetHash("");
+
+		const hKey = `${key}${HASH_SUB_KV_SEP}`;
+		const out = [link];
+		if (sub.length) sub.filter(it => !it.startsWith(hKey)).forEach(it => out.push(it));
+		if (val != null) out.push(`${hKey}${val}`);
+
+		History.cleanSetHash(out.join(HASH_PART_SEP));
+	}
 }
+History.lastLoadedLink = null;
+History.lastLoadedId = null;
+History.initialLoad = true;
+History.isHistorySuppressed = false;

@@ -5,6 +5,9 @@ module.exports = {
 		"es6": true,
 		"jquery": true
 	},
+	"parserOptions": {
+		"ecmaVersion": 9
+	},
 	"rules": {
 		"accessor-pairs": "error",
 		"arrow-spacing": ["error", {"before": true, "after": true}],
@@ -68,7 +71,7 @@ module.exports = {
 		"no-irregular-whitespace": "error",
 		"no-iterator": "error",
 		"no-label-var": "error",
-		"no-labels": ["error", {"allowLoop": false, "allowSwitch": false}],
+		"no-labels": ["error", {"allowLoop": true, "allowSwitch": false}],
 		"no-lone-blocks": "error",
 		"no-mixed-operators": ["error", {
 			"groups": [
@@ -159,4 +162,4 @@ module.exports = {
 		"yield-star-spacing": ["error", "both"],
 		"yoda": ["error", "never"]
 	}
-}
+};

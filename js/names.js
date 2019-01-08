@@ -3,7 +3,7 @@
 const JSON_URL = "data/names.json";
 
 let nameList;
-const renderer = new EntryRenderer();
+const renderer = EntryRenderer.getDefaultRenderer();
 
 function makeContentsBlock (i, loc) {
 	let out =
@@ -27,7 +27,8 @@ function getTableName (loc, table) {
 }
 
 window.onload = function load () {
-	DataUtil.loadJSON(JSON_URL, onJsonLoad);
+	ExcludeUtil.pInitialise(); // don't await, as this is only used for search
+	DataUtil.loadJSON(JSON_URL).then(onJsonLoad);
 };
 
 function onJsonLoad (data) {
@@ -51,7 +52,7 @@ function onJsonLoad (data) {
 		listClass: "names"
 	});
 
-	initHistory();
+	History.init(true);
 }
 
 function showHideList (ele) {
@@ -60,22 +61,25 @@ function showHideList (ele) {
 }
 
 function loadhash (id) {
+	renderer.setFirstSection(true);
+
 	const [iLoad, jLoad] = id.split(",").map(n => Number(n));
 	const race = nameList[iLoad];
 	const table = race.tables[jLoad].table;
 	const tableName = getTableName(race, race.tables[jLoad]);
+	const diceType = race.tables[jLoad].diceType;
 
 	let htmlText = `
 		<tr>
 			<td colspan="6">
-				<table>
+				<table class="striped-odd">
 					<caption>${tableName}</caption>
 					<thead>
 						<tr>
-							<th class="col-xs-2 text-align-center">
-								<span class="roller" onclick="rollAgainstTable('${iLoad}', '${jLoad}')">d100</span>
+							<th class="col-2 text-align-center">
+								<span class="roller" onclick="rollAgainstTable('${iLoad}', '${jLoad}')">d${diceType}</span>
 							</th>
-							<th class="col-xs-10">Name</th>
+							<th class="col-10">Name</th>
 						</tr>
 					</thead>`;
 
@@ -110,32 +114,33 @@ function rollAgainstTable (iLoad, jLoad) {
 	const table = race.tables[jLoad];
 	const rollTable = table.table;
 
-	const die = "1d100";
-	const roll = droll.roll(die);
-	roll.total = roll.total - 1; // -1 since droll thinks d100's go from 1-100
+	rollTable._rMax = rollTable.rMax == null ? Math.max(...rollTable.filter(it => it.min != null).map(it => it.min), ...rollTable.filter(it => it.max != null).map(it => it.max)) : rollTable.rMax;
+	rollTable._rMin = rollTable._rMin == null ? Math.min(...rollTable.filter(it => it.min != null).map(it => it.min), ...rollTable.filter(it => it.max != null).map(it => it.max)) : rollTable._rMin;
+
+	const roll = RollerUtil.randomise(rollTable._rMax, rollTable._rMin);
 
 	let result;
 	for (let i = 0; i < rollTable.length; i++) {
 		const row = rollTable[i];
-		if (roll.total >= row.min && (row.max === undefined || roll.total <= row.max)) {
+		const trueMin = row.max != null && row.max < row.min ? row.max : row.min;
+		const trueMax = row.max != null && row.max > row.min ? row.max : row.min;
+		if (roll >= trueMin && roll <= trueMax) {
 			result = getRenderedText(row.enc);
 			break;
 		}
 	}
 
 	// add dice results
-	result = result.replace(DICE_REGEX, function (match) {
-		const resultRoll = droll.roll(match);
-		return `<span class="roller" onclick="reroll(this)">${match}</span> <span class="result">(${resultRoll.total})</span>`
+	result = result.replace(RollerUtil.DICE_REGEX, function (match) {
+		const r = EntryRenderer.dice.parseRandomise2(match);
+		return `<span class="roller" onmousedown="event.preventDefault()" onclick="reroll(this)">${match}</span> (<span class="result">${r}</span>)`
 	});
 
-	$("div#output").prepend(
-		`<span>${race.race} - ${table.option}: <em>${die}</em> rolled <strong>${pad(roll.total)}</strong> \u2014 ${result}<br></span>`).show();
-	$("div#output > span:eq(5)").remove();
+	EntryRenderer.dice.addRoll({name: `${race.race} - ${table.option}`}, `<span><strong>${pad(roll)}</strong> ${result}</span>`);
 }
 
 function reroll (ele) {
 	const $ele = $(ele);
-	const resultRoll = droll.roll($ele.html());
-	$ele.next(".result").html(`(${resultRoll.total})`)
+	const resultRoll = EntryRenderer.dice.parseRandomise2($ele.html());
+	$ele.next(".result").html(resultRoll);
 }

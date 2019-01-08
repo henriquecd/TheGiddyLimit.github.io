@@ -1,5 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-06/schema#",
+	"version": "1.2.5",
 	"title": "SpellsArray",
 	"type": "object",
 
@@ -22,7 +23,8 @@
 						"D",
 						"N",
 						"T",
-						"C"
+						"C",
+						"P"
 					]
 				},
 				"meta": {
@@ -100,7 +102,30 @@
 							"type": "boolean"
 						},
 						"m": {
-							"type": ["boolean", "string"]
+							"oneOf": [
+								{
+									"type": "object",
+									"properties": {
+										"text": {
+											"type": "string"
+										},
+										"cost": {
+											"type": "integer"
+										},
+										"consume": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"text"
+									],
+									"additionalProperties": false
+
+								},
+								{
+									"type": ["boolean", "string"]
+								}
+							]
 						}
 					},
 					"additionalProperties": false
@@ -171,11 +196,50 @@
 					],
 					"additionalProperties": false
 				},
+				"races": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"source": {
+								"type": "string"
+							},
+							"baseName": {
+								"type": "string"
+							},
+							"baseSource": {
+								"type": "string"
+							}
+						},
+						"required": ["name", "source"]
+					}
+				},
 				"source": {
 					"type": "string"
 				},
 				"page": {
 					"type": "integer"
+				},
+				"otherSources": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"source": {
+								"type": "string"
+							},
+							"page": {
+								"type": "integer"
+							}
+						},
+						"required": [
+							"source"
+						],
+						"additionalProperties": false
+					}
 				},
 				"damageInflict": {
 					"type": "array",
@@ -213,6 +277,15 @@
 						]
 					}
 				},
+				"conditionInflict": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"blinded", "charmed", "deafened", "exhaustion", "frightened", "grappled", "incapacitated", "invisible", "paralyzed", "petrified", "poisoned", "prone", "restrained", "stunned", "unconscious"
+						]
+					}
+				},
 				"savingThrow": {
 					"type": "array",
 					"items": {
@@ -230,6 +303,25 @@
 							"strength", "constitution", "dexterity", "intelligence", "wisdom", "charisma"
 						]
 					}
+				},
+				"permanentEffects": {
+					"description": "Used to flag spells that can/will have permanent effects, but are not listed as having permanent duration",
+					"type": "boolean"
+				},
+				"spellAttack": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"M", "R", "O"
+						]
+					}
+				},
+				"scalingEffects": {
+					"type": "boolean"
+				},
+				"isHeal": {
+					"type": "boolean"
 				}
 			},
 			"required": [
@@ -238,12 +330,10 @@
 				"school",
 				"time",
 				"range",
-				"components",
 				"duration",
 				"classes",
 				"entries",
-				"source",
-				"page"
+				"source"
 			],
 			"additionalProperties": false
 		},
@@ -283,13 +373,13 @@
 						"type": {
 							"type": "string",
 							"enum": [
-								"hours",
-								"minutes",
-								"turns",
-								"rounds",
-								"weeks",
-								"days",
-								"years"
+								"hour",
+								"minute",
+								"turn",
+								"round",
+								"week",
+								"day",
+								"year"
 							]
 						},
 						"amount": {
@@ -311,7 +401,7 @@
 					"type": "array",
 					"items": {
 						"type": "string",
-						"enum": ["dispell", "trigger", "discharge"]
+						"enum": ["dispel", "trigger", "discharge"]
 					}
 				},
 				"condition": {

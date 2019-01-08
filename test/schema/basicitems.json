@@ -1,5 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-06/schema#",
+	"version": "1.0.2",
 	"definitions": {
 		"itemLookup": {
 			"type": "array",
@@ -72,7 +73,19 @@
 						"type": "string"
 					},
 					"rarity": {
-						"type": "string"
+						"type": "string",
+						"description": "\"None\" is for mundane items. \"Unknown (Magic)\" is for miscellaneous magical items. \"Unknown\" is for miscellaneous mundane items.",
+						"enum": [
+							"Rare",
+							"None",
+							"Uncommon",
+							"Very Rare",
+							"Legendary",
+							"Artifact",
+							"Unknown",
+							"Common",
+							"Unknown (Magic)"
+						]
 					},
 					"source": {
 						"type": "string"
@@ -123,6 +136,9 @@
 					"reload": {
 						"type": "string"
 					},
+					"scfType": {
+						"type": "string"
+					},
 					"stealth": {
 						"type": "boolean"
 					},
@@ -146,6 +162,9 @@
 					},
 					"weight": {
 						"type": "string"
+					},
+					"quantity": {
+						"type": "integer"
 					}
 				},
 				"required": [

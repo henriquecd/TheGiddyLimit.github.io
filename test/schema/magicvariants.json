@@ -1,5 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-06/schema#",
+	"version": "1.1.0",
 	"type": "object",
 	"properties": {
 		"variant": {
@@ -21,34 +22,40 @@
 						}
 					},
 					"requires": {
-						"type": "object",
-						"properties": {
-							"ammunition": {
-								"type": "boolean"
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"ammunition": {
+									"type": "boolean"
+								},
+								"armor": {
+									"type": "boolean"
+								},
+								"axe": {
+									"type": "boolean"
+								},
+								"sword": {
+									"type": "boolean"
+								},
+								"weapon": {
+									"type": "boolean"
+								},
+								"dmgType": {
+									"type": "string"
+								},
+								"name": {
+									"type": "string"
+								},
+								"type": {
+									"type": "string"
+								},
+								"scfType": {
+									"type": "string"
+								}
 							},
-							"armor": {
-								"type": "boolean"
-							},
-							"axe": {
-								"type": "boolean"
-							},
-							"sword": {
-								"type": "boolean"
-							},
-							"weapon": {
-								"type": "boolean"
-							},
-							"dmgType": {
-								"type": "string"
-							},
-							"name": {
-								"type": "string"
-							},
-							"type": {
-								"type": "string"
-							}
-						},
-						"additionalProperties": false
+							"additionalProperties": false
+						}
 					},
 					"inherits": {
 						"type": "object",
@@ -66,7 +73,7 @@
 								"type": "string"
 							},
 							"page": {
-								"type": "string"
+								"type": "integer"
 							},
 							"namePrefix": {
 								"type": "string"
@@ -75,12 +82,25 @@
 								"type": "string"
 							},
 							"reqAttune": {
-								"type": "string"
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"type": "boolean"
+									}
+								]
+							},
+							"curse": {
+								"type": "boolean"
 							},
 							"resist": {
 								"type": "string"
 							},
 							"stealth": {
+								"type": "boolean"
+							},
+							"wondrous": {
 								"type": "boolean"
 							},
 							"entries": {
@@ -111,6 +131,15 @@
 									],
 									"additionalProperties": false
 								}
+							},
+							"charges": {
+								"type": ["string", "integer"]
+							},
+							"attachedSpells": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
 							}
 						},
 						"required": [
@@ -124,9 +153,22 @@
 						"type": "object",
 						"properties": {
 							"name": {
-								"type": "string"
+								"oneOf": [
+									{
+										"type": "string"
+									},
+									{
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								]
 							},
 							"page": {
+								"type": "integer"
+							},
+							"property": {
 								"type": "string"
 							}
 						},
@@ -134,6 +176,15 @@
 					},
 					"noDisplay": {
 						"type": "boolean"
+					},
+					"charges": {
+						"type": ["string", "integer"]
+					},
+					"attachedSpells": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
 					}
 				},
 				"required": [

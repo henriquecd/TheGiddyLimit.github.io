@@ -5,7 +5,8 @@ const JSON_URL = "data/demo.json";
 window.onload = loadJson;
 
 function loadJson () {
-	DataUtil.loadJSON(JSON_URL, initDemo)
+	ExcludeUtil.pInitialise(); // don't await, as this is only used for search
+	DataUtil.loadJSON(JSON_URL).then(initDemo)
 }
 
 function initDemo (data) {
@@ -22,7 +23,9 @@ function initDemo (data) {
 	// init editor
 	const editor = ace.edit("jsoninput");
 	editor.setOptions({
-		wrap: true
+		wrap: true,
+		showPrintMargin: false,
+		tabSize: 2
 	});
 
 	function demoRender () {
@@ -33,9 +36,13 @@ function initDemo (data) {
 			json = JSON.parse(editor.getValue());
 		} catch (e) {
 			$msg.html(`Invalid JSON! We recommend using <a href="https://jsonlint.com/" target="_blank">JSONLint</a>.`);
-			return;
+			setTimeout(() => {
+				throw e
+			});
 		}
 
+		renderer.setFirstSection(true);
+		renderer.resetHeaderIndex();
 		renderer.recursiveEntryRender(json, renderStack);
 		$out.html(`
 			<tr><th class="border" colspan="6"></th></tr>
@@ -48,6 +55,7 @@ function initDemo (data) {
 		editor.setValue(JSON.stringify(defaultJson, null, "\t"));
 		editor.clearSelection();
 		demoRender();
+		editor.selection.moveCursorToPosition({row: 0, column: 0});
 	}
 
 	demoReset();

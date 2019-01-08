@@ -4,18 +4,18 @@
 <head>
 	<!--5ETOOLS_VERSION-->
 	<meta charset="utf-8">
+	<meta name="description" content="">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<title>Names - 5etools</title>
 
 	<link rel="stylesheet" href="css/bootstrap.css">
+	<link rel="stylesheet" href="css/jquery-ui.css">
+	<link rel="stylesheet" href="css/jquery-ui-slider-pips.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="icon" href="favicon.png">
 
-	<style id="dynamicStyle"></style> <!-- populated with JS -->
-
-	<script type="text/javascript" src="lib/js-cookie.js"></script>
 	<script type="text/javascript" src="js/styleswitch.js"></script>
 	<script type="text/javascript" src="js/navigation.js"></script>
 	<style>
@@ -78,12 +78,6 @@
 			margin-bottom: 5px;
 		}
 
-		#output {
-			display: block;
-			flex-shrink: 0;
-			flex-grow: 0;
-		}
-
 		.rolltable {
 			display: flex;
 		}
@@ -95,7 +89,7 @@
 	<header class="hidden-xs hidden-sm">
 		<div class="container">
 			<h1>Names</h1>
-			<p>Choose a race and a type, then roll the d100!</p>
+			<p>Choose a race and a type, then roll the dice!</p>
 		</div>
 	</header>
 	<nav class="container" id="navigation">
@@ -117,15 +111,8 @@
 		</div>
 
 		<div class="view-col" id="tablecontainer">
-			<div id="output">
-				<span><br></span>
-				<span><br></span>
-				<span><br></span>
-				<span><br></span>
-				<span>(Roll output will appear here - click the d100 in the table!)<br></span>
-			</div>
 			<div class="rolltable" id="contentwrapper">
-				<table id="pagecontent" class="stats">
+				<table id="pagecontent" class="stats stats-book">
 					<!-- populate with JS -->
 				</table>
 			</div>
@@ -133,14 +120,17 @@
 	</div>
 </div>    <!--5ETOOLS_SCRIPT_ANCHOR-->
 <script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="lib/localforage.js"></script>
+<script type="text/javascript" src="js/omnidexer.js"></script>
 <script type="text/javascript" src="js/omnisearch.js"></script>
 <script type="text/javascript" src="js/entryrender.js"></script>
+<script type="text/javascript" src="js/scalecreature.js"></script>
 <script type="text/javascript" src="js/history.js"></script>
 <script type="text/javascript" src="js/names.js"></script>
-<script type="text/javascript" src="lib/droll.js"></script>
 <script type="text/javascript" src="lib/list.js"></script>
 <script type="text/javascript" src="lib/jquery.js"></script>
-<script type="text/javascript" src="lib/bootstrap.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.js"></script>
+<script type="text/javascript" src="lib/jquery-ui-slider-pip.js"></script>
 <script type="text/javascript" src="lib/elasticlunr.js"></script>
 </body>
 
