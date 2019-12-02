@@ -1,7 +1,17 @@
+"use strict";
+
 class BooksList {
+	static getDateStr (it) {
+		if (!it.published) return "\u2014";
+		const date = new Date(it.published);
+		return MiscUtil.dateToStr(date);
+	}
+
 	constructor (options) {
 		this.contentsUrl = options.contentsUrl;
-		this.sortFn = options.sortFn;
+		this.fnSort = options.fnSort;
+		this.sortByInitial = options.sortByInitial;
+		this.sortDirInitial = options.sortDirInitial;
 		this.dataProp = options.dataProp;
 		this.enhanceRowDataFn = options.enhanceRowDataFn;
 		this.rootPage = options.rootPage;
@@ -12,41 +22,28 @@ class BooksList {
 		this.dataList = [];
 	}
 
-	onPageLoad () {
+	async pOnPageLoad () {
 		ExcludeUtil.pInitialise(); // don't await, as this is only used for search
-		SortUtil.initHandleFilterButtonClicks();
-		DataUtil.loadJSON(this.contentsUrl).then(this.onJsonLoad.bind(this));
+		const data = await DataUtil.loadJSON(this.contentsUrl);
+		return this.pOnJsonLoad(data);
 	}
 
-	onJsonLoad (data) {
-		const sortFunction = (a, b, o) => self.sortFn(self.dataList, a, b, o);
-		this.list = new List("listcontainer", {
-			valueNames: ["name"],
-			listClass: "books",
-			sortFunction
+	async pOnJsonLoad (data) {
+		const $iptSearch = $(`#search`);
+
+		const fnSort = (a, b, o) => this.fnSort(this.dataList, a, b, o);
+		this.list = new List({
+			$wrpList: $("ul.books"),
+			$iptSearch,
+			fnSort,
+			sortByInitial: this.sortByInitial,
+			sortDirInitial: this.sortDirInitial
 		});
+		SortUtil.initBtnSortHandlers($(`#filtertools`), this.list);
 
-		const self = this;
-		$("#filtertools").find("button.sort").on(EVNT_CLICK, function () {
-			const $this = $(this);
-			$('#filtertools').find('.caret').removeClass('caret--reverse caret');
+		$("#reset").click(() => {
+			this.list.reset();
 
-			if ($this.attr("sortby") === "asc") {
-				$this.find("span").addClass("caret caret--reverse");
-				$this.attr("sortby", "desc");
-			} else {
-				$this.attr("sortby", "asc");
-				$this.find("span").addClass("caret")
-			}
-			self.list.sort($this.data("sort"), {order: $this.attr("sortby"), sortFunction});
-		});
-
-		this.list.sort("name");
-		$("#reset").click(function () {
-			$("#search").val("");
-			self.list.search();
-			self.list.sort("name");
-			self.list.filter();
 			$(`.showhide`).each((i, ele) => {
 				const $ele = $(ele);
 				if (!$ele.data("hidden")) {
@@ -56,11 +53,12 @@ class BooksList {
 		});
 
 		this.addData(data);
-		BrewUtil.pAddBrewData()
-			.then(handleBrew)
-			.then(BrewUtil.pAddLocalBrewData)
-			.catch(BrewUtil.pPurgeBrew)
-			.then(() => BrewUtil.makeBrewButton("manage-brew"));
+		const brewData = await BrewUtil.pAddBrewData();
+		await handleBrew(brewData);
+		BrewUtil.bind({list: this.list});
+		await BrewUtil.pAddLocalBrewData();
+		BrewUtil.makeBrewButton("manage-brew");
+		this.list.init();
 	}
 
 	addData (data) {
@@ -68,29 +66,31 @@ class BooksList {
 
 		this.dataList = this.dataList.concat(data[this.dataProp]);
 
-		const $list = $("ul.books");
-		let tempString = "";
 		for (; this.dataIx < this.dataList.length; this.dataIx++) {
 			const it = this.dataList[this.dataIx];
 			if (this.enhanceRowDataFn) this.enhanceRowDataFn(it);
 
-			tempString +=
-				`<li ${FLTR_ID}="${this.dataIx}">
-				<a href="${this.rootPage}#${it.id}" title="${it.name}" class="book-name">
-					<span class="full-width">
-						${this.rowBuilderFn(it)}
-					</span>
-					<span class="showhide" onclick="BookUtil.indexListToggle(event, this)" data-hidden="true">[+]</span>
-					<span class="source" style="display: none">${it.id}</span>
-				</a>
-				${BookUtil.makeContentsBlock({book: it, addPrefix: this.rootPage, defaultHidden: true})}
-			</li>`;
-		}
-		const lastSearch = ListUtil.getSearchTermAndReset(this.list);
-		$list.append(tempString);
+			const eleLi = document.createElement("li");
 
-		this.list.reIndex();
-		if (lastSearch) this.list.search(lastSearch);
-		this.list.sort("name");
+			eleLi.innerHTML = `<a href="${this.rootPage}#${UrlUtil.encodeForHash(it.id)}" class="book-name lst--border">
+				<span class="w-100">${this.rowBuilderFn(it)}</span>
+				<span class="showhide" onclick="BookUtil.indexListToggle(event, this)" data-hidden="true">[+]</span>
+			</a>
+			${BookUtil.makeContentsBlock({book: it, addPrefix: this.rootPage, defaultHidden: true})}`;
+
+			const listItem = new ListItem(
+				this.dataIx,
+				eleLi,
+				it.name,
+				{
+					source: it.id,
+					uniqueId: it.uniqueId
+				}
+			);
+
+			this.list.addItem(listItem);
+		}
+
+		this.list.update();
 	}
 }

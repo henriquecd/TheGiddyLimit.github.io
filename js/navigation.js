@@ -1,6 +1,8 @@
 "use strict";
+
 class NavBar {
 	static init () {
+		this._initInstallPrompt();
 		// render the visible elements ASAP
 		window.addEventListener(
 			"DOMContentLoaded",
@@ -12,36 +14,57 @@ class NavBar {
 		window.addEventListener("load", NavBar.initHandlers);
 	}
 
+	static _initInstallPrompt () {
+		NavBar._cachedInstallEvent = null;
+		window.addEventListener("beforeinstallprompt", e => NavBar._cachedInstallEvent = e);
+	}
+
 	static initElements () {
 		const navBar = document.getElementById("navbar");
 
-		addLi(navBar, "5etools.html", "Home");
+		// create mobile "Menu" button
+		const btnShowHide = document.createElement("button");
+		btnShowHide.className = "btn btn-default page__btn-toggle-nav";
+		btnShowHide.innerHTML = "Menu";
+		btnShowHide.onclick = () => {
+			$(btnShowHide).toggleClass("active");
+			$(`.page__nav-hidden-mobile`).toggleClass("block", $(btnShowHide).hasClass("active"));
+		};
+		document.getElementById("navigation").prepend(btnShowHide);
+
+		addLi(navBar, "5etools.html", "Home", {isRoot: true});
 
 		const ulRules = addDropdown(navBar, "Rules");
 		addLi(ulRules, "quickreference.html", "Quick Reference");
-		addLi(ulRules, "variantrules.html", "Variant & Optional Rules");
+		addLi(ulRules, "variantrules.html", "Variant & Optional Rules/Misc");
 		addLi(ulRules, "tables.html", "Tables");
 		addDivider(ulRules);
-		addLi(ulRules, "book.html", "Dungeon Master's Guide", false, "DMG");
-		addLi(ulRules, "book.html", "Monster Manual", false, "MM");
-		addLi(ulRules, "book.html", "Player's Handbook", false, "PHB");
+		addLi(ulRules, "book.html", "Dungeon Master's Guide", {aHash: "DMG"});
+		addLi(ulRules, "book.html", "Monster Manual", {aHash: "MM"});
+		addLi(ulRules, "book.html", "Player's Handbook", {aHash: "PHB"});
 		addDivider(ulRules);
-		addLi(ulRules, "book.html", "Guildmasters' Guide to Ravnica", false, "GGR");
-		addLi(ulRules, "book.html", "Mordenkainen's Tome of Foes", false, "MTF");
-		addLi(ulRules, "book.html", "Sword Coast Adventurer's Guide", false, "SCAG");
-		addLi(ulRules, "book.html", "Volo's Guide to Monsters", false, "VGM");
-		addLi(ulRules, "book.html", "Xanathar's Guide to Everything", false, "XGE");
+		addLi(ulRules, "book.html", "Acquisitions Incorporated", {aHash: "AI"});
+		addLi(ulRules, "book.html", "Guildmasters' Guide to Ravnica", {aHash: "GGR"});
+		addLi(ulRules, "book.html", "Mordenkainen's Tome of Foes", {aHash: "MTF"});
+		addLi(ulRules, "book.html", "Sword Coast Adventurer's Guide", {aHash: "SCAG"});
+		addLi(ulRules, "book.html", "Volo's Guide to Monsters", {aHash: "VGM"});
+		addLi(ulRules, "book.html", "Xanathar's Guide to Everything", {aHash: "XGE"});
+		addLi(ulRules, "book.html", "Eberron: Rising from the Last War", {aHash: "ERLW"});
+		addLi(ulRules, "book.html", "Dungeons & Dragons vs. Rick and Morty: Basic Rules", {aHash: "RMR"});
 		addDivider(ulRules);
-		addLi(ulRules, "book.html", "Adventurers League", false, "AL");
+		addLi(ulRules, "book.html", "Adventurers League", {aHash: "AL"});
+		addLi(ulRules, "book.html", "Sage Advice Compendium", {aHash: "SAC"});
 		addDivider(ulRules);
 		addLi(ulRules, "books.html", "View All/Homebrew");
 
 		const ulPlayers = addDropdown(navBar, "Player Options");
 		addLi(ulPlayers, "classes.html", "Classes");
-		addLi(ulPlayers, "optionalfeatures.html", "Class Feature Options");
 		addLi(ulPlayers, "backgrounds.html", "Backgrounds");
 		addLi(ulPlayers, "feats.html", "Feats");
 		addLi(ulPlayers, "races.html", "Races");
+		addDivider(ulPlayers);
+		addLi(ulPlayers, "statgen.html", "Statgen");
+		addDivider(ulPlayers);
 		addLi(ulPlayers, "lifegen.html", "This Is Your Life");
 		addLi(ulPlayers, "names.html", "Names");
 
@@ -49,88 +72,262 @@ class NavBar {
 		addLi(ulDms, "dmscreen.html", "DM Screen");
 		addDivider(ulDms);
 		const ulAdventures = addDropdown(ulDms, "Adventures", true);
-		addLi(ulAdventures, "adventures.html", "View All/Homebrew");
+		addLi(ulAdventures, "adventure.html", "Lost Mines of Phandelver", {isSide: true, aHash: "LMoP"});
+		addLi(ulAdventures, "adventure.html", "Hoard of the Dragon Queen", {isSide: true, aHash: "HotDQ"});
+		addLi(ulAdventures, "adventure.html", "Rise of Tiamat", {isSide: true, aHash: "RoT"});
+		addLi(ulAdventures, "adventure.html", "Princes of the Apocalypse", {isSide: true, aHash: "PotA"});
+		addLi(ulAdventures, "adventure.html", "Out of the Abyss", {isSide: true, aHash: "OotA"});
+		addLi(ulAdventures, "adventure.html", "Curse of Strahd", {isSide: true, aHash: "CoS"});
+		addLi(ulAdventures, "adventure.html", "Storm King's Thunder", {isSide: true, aHash: "SKT"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: The Sunless Citadel", {isSide: true, aHash: "TftYP-TSC"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: The Forge of Fury", {isSide: true, aHash: "TftYP-TFoF"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: The Hidden Shrine of Tamoachan", {isSide: true, aHash: "TftYP-THSoT"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: White Plume Mountain", {isSide: true, aHash: "TftYP-WPM"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: Dead in Thay", {isSide: true, aHash: "TftYP-DiT"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: Against the Giants", {isSide: true, aHash: "TftYP-AtG"});
+		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: Tomb of Horrors", {isSide: true, aHash: "TftYP-ToH"});
+		addLi(ulAdventures, "adventure.html", "Tomb of Annihilation", {isSide: true, aHash: "ToA"});
+		addLi(ulAdventures, "adventure.html", "The Tortle Package", {isSide: true, aHash: "TTP"});
+		addLi(ulAdventures, "adventure.html", "Waterdeep: Dragon Heist", {isSide: true, aHash: "WDH"});
+		addLi(ulAdventures, "adventure.html", "Lost Laboratory of Kwalish", {isSide: true, aHash: "LLK"});
+		addLi(ulAdventures, "adventure.html", "Waterdeep: Dungeon of the Mad Mage", {isSide: true, aHash: "WDMM"});
+		addLi(ulAdventures, "adventure.html", "Krenko's Way", {isSide: true, aHash: "KKW"});
+		addLi(ulAdventures, "adventure.html", "Ghosts of Saltmarsh", {isSide: true, aHash: "GoS"});
+		addLi(ulAdventures, "adventure.html", "Hunt for the Thessalhydra", {isSide: true, aHash: "HftT"});
+		addLi(ulAdventures, "adventure.html", "The Orrery of the Wanderer", {isSide: true, aHash: "OoW"});
+		addLi(ulAdventures, "adventure.html", "Essentials Kit: Dragon of Icespire Peak", {isSide: true, aHash: "DIP"});
+		addLi(ulAdventures, "adventure.html", "Essentials Kit: Storm Lord's Wrath", {isSide: true, aHash: "SLW"});
+		addLi(ulAdventures, "adventure.html", "Essentials Kit: Sleeping Dragon's Wake", {isSide: true, aHash: "SDW"});
+		addLi(ulAdventures, "adventure.html", "Essentials Kit: Divine Contention", {isSide: true, aHash: "DC"});
+		addLi(ulAdventures, "adventure.html", "Baldur's Gate: Descent Into Avernus", {isSide: true, aHash: "BGDIA"});
+		addLi(ulAdventures, "adventure.html", "Locathah Rising", {isSide: true, aHash: "LR"});
+		addLi(ulAdventures, "adventure.html", "Eberron: Forgotten Relics", {isSide: true, aHash: "EFR"});
+		addLi(ulAdventures, "adventure.html", "Rick and Morty: Big Rick Energy", {isSide: true, aHash: "RMBRE"});
 		addDivider(ulAdventures);
-		addLi(ulAdventures, "adventure.html", "Lost Mines of Phandelver", true, "LMoP");
-		addLi(ulAdventures, "adventure.html", "Hoard of the Dragon Queen", true, "HotDQ");
-		addLi(ulAdventures, "adventure.html", "Rise of Tiamat", true, "RoT");
-		addLi(ulAdventures, "adventure.html", "Lost Mines of Phandelver", true, "LMoP");
-		addLi(ulAdventures, "adventure.html", "Hoard of the Dragon Queen", true, "HotDQ");
-		addLi(ulAdventures, "adventure.html", "Rise of Tiamat", true, "RoT");
-		addLi(ulAdventures, "adventure.html", "Princes of the Apocalypse", true, "PotA");
-		addLi(ulAdventures, "adventure.html", "Out of the Abyss", true, "OotA");
-		addLi(ulAdventures, "adventure.html", "Curse of Strahd", true, "CoS");
-		addLi(ulAdventures, "adventure.html", "Storm King's Thunder", true, "SKT");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: The Sunless Citadel", true, "TftYP-TSC");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: The Forge of Fury", true, "TftYP-TFoF");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: The Hidden Shrine of Tamoachan", true, "TftYP-THSoT");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: White Plume Mountain", true, "TftYP-WPM");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: Dead in Thay", true, "TftYP-DiT");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: Against the Giants", true, "TftYP-AtG");
-		addLi(ulAdventures, "adventure.html", "Tales from the Yawning Portal: Tomb of Horrors", true, "TftYP-ToH");
-		addLi(ulAdventures, "adventure.html", "Tomb of Annihilation", true, "ToA");
-		addLi(ulAdventures, "adventure.html", "The Tortle Package", true, "TTP");
-		addLi(ulAdventures, "adventure.html", "Waterdeep: Dragon Heist", true, "WDH");
-		addLi(ulAdventures, "adventure.html", "Lost Laboratory of Kwalish", true, "LLK");
-		addLi(ulAdventures, "adventure.html", "Waterdeep: Dungeon of the Mad Mage", true, "WDMM");
-		addLi(ulAdventures, "adventure.html", "Krenko's Way", true, "KKW");
+		addLi(ulAdventures, "adventures.html", "View All/Homebrew");
+		addLi(ulDms, "cultsboons.html", "Cults & Supernatural Boons");
+		addLi(ulDms, "objects.html", "Objects");
+		addLi(ulDms, "trapshazards.html", "Traps & Hazards");
+		addDivider(ulDms);
 		addLi(ulDms, "crcalculator.html", "CR Calculator");
-		addLi(ulDms, "cultsboons.html", "Cults & Demonic Boons");
 		addLi(ulDms, "encountergen.html", "Encounter Generator");
 		addLi(ulDms, "lootgen.html", "Loot Generator");
-		addLi(ulDms, "objects.html", "Objects");
-		addLi(ulDms, "ships.html", "Ships");
-		addLi(ulDms, "trapshazards.html", "Traps & Hazards");
 
 		const ulReferences = addDropdown(navBar, "References");
+		addLi(ulReferences, "actions.html", "Actions");
 		addLi(ulReferences, "bestiary.html", "Bestiary");
 		addLi(ulReferences, "conditionsdiseases.html", "Conditions & Diseases");
 		addLi(ulReferences, "deities.html", "Deities");
 		addLi(ulReferences, "items.html", "Items");
+		addLi(ulReferences, "optionalfeatures.html", "Other Options and Features");
 		addLi(ulReferences, "rewards.html", "Other Rewards");
 		addLi(ulReferences, "psionics.html", "Psionics");
 		addLi(ulReferences, "spells.html", "Spells");
-
-		addLi(navBar, "statgen.html", "Statgen");
+		addLi(ulReferences, "vehicles.html", "Vehicles");
 
 		const ulUtils = addDropdown(navBar, "Utilities");
 		addLi(ulUtils, "blacklist.html", "Content Blacklist");
-		addLi(ulUtils, "managebrew.html", "Manage All Homebrew");
+		addLi(ulUtils, "managebrew.html", "Homebrew Manager");
+		addLi(ulUtils, "inittrackerplayerview.html", "Initiative Tracker Player View");
 		addDivider(ulUtils);
+		addLi(ulUtils, "makebrew.html", "Homebrew Builder");
 		addLi(ulUtils, "demo.html", "Renderer Demo");
+		addLi(ulUtils, "makecards.html", "RPG Cards JSON Builder");
 		addLi(ulUtils, "converter.html", "Text Converter");
 		addDivider(ulUtils);
 		addLi(ulUtils, "roll20.html", "Roll20 Script Help");
 		addLi(ulUtils, "makeshaped.html", "Roll20 Shaped Sheet JS Builder");
 		addDivider(ulUtils);
-		addLi(ulUtils, "donate.html", "Donate");
+		addLi(ulUtils, "changelog.html", "Changelog");
+		addLi(ulUtils, `https://wiki.5e.tools/index.php/Page:_${NavBar.getCurrentPage().replace(/.html$/i, "")}`, "Help", {isExternal: true});
+		addDivider(ulUtils);
+		addLi(ulUtils, "privacy-policy.html", "Privacy Policy");
 
-		addNightModeToggle(navBar);
+		addLi(navBar, "donate.html", "Donate", {isRoot: true});
+
+		const ulSettings = addDropdown(navBar, "Settings");
+		addButton(
+			ulSettings,
+			{
+				html: styleSwitcher.getActiveStyleSheet() === StyleSwitcher.STYLE_DAY ? "Night Mode" : "Day Mode",
+				click: (evt) => {
+					evt.preventDefault();
+					styleSwitcher.toggleActiveStyleSheet();
+				},
+				className: "nightModeToggle"
+			}
+		);
+		addDivider(ulSettings);
+		addButton(
+			ulSettings,
+			{
+				html: "Save State to File",
+				click: async (evt) => {
+					evt.preventDefault();
+					const sync = StorageUtil.syncGetDump();
+					const async = await StorageUtil.pGetDump();
+					const dump = {sync, async};
+					DataUtil.userDownload("5etools", dump);
+				},
+				title: "Save any locally-stored data (loaded homebrew, active blacklists, DM Screen configuration,...) to a file."
+			}
+		);
+		addButton(
+			ulSettings,
+			{
+				html: "Load State from File",
+				click: async (evt) => {
+					evt.preventDefault();
+					const dump = await DataUtil.pUserUpload();
+
+					StorageUtil.syncSetFromDump(dump.sync);
+					await StorageUtil.pSetFromDump(dump.async);
+					location.reload();
+				},
+				title: "Load previously-saved data (loaded homebrew, active blacklists, DM Screen configuration,...) from a file."
+			}
+		);
+		addDivider(ulSettings);
+		addButton(
+			ulSettings,
+			{
+				html: "Add as App",
+				click: async (evt) => {
+					evt.preventDefault();
+					try {
+						NavBar._cachedInstallEvent.prompt();
+					} catch (e) {
+						// Ignore errors
+					}
+				},
+				title: "Add the site to your home screen. When used in conjunction with the Preload Offline Data option, this can create a functional offline copy off the site."
+			}
+		);
+		addButton(
+			ulSettings,
+			{
+				html: "Preload Offline Data",
+				click: async (evt) => {
+					evt.preventDefault();
+
+					if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+						JqueryUtil.doToast(`The loader was not yet available! Reload the page and try again. If this problem persists, your browser may not support preloading.`);
+						return;
+					}
+
+					const messageChannel = new MessageChannel();
+					const sendMessage = (data) => {
+						try {
+							navigator.serviceWorker.controller.postMessage(data, [messageChannel.port2]);
+						} catch (ignored) {
+							// Ignore errors
+						}
+					};
+
+					if (NavBar._downloadBarMeta) {
+						if (NavBar._downloadBarMeta) {
+							NavBar._downloadBarMeta.$wrpOuter.remove();
+							NavBar._downloadBarMeta = null;
+						}
+						sendMessage({"type": "cache-cancel"});
+					}
+
+					const $dispProgress = $(`<div class="page__disp-download-progress-bar"/>`);
+					const $dispPct = $(`<div class="page__disp-download-progress-text flex-vh-center bold">0%</div>`);
+
+					const $btnCancel = $(`<button class="btn btn-default"><span class="glyphicon glyphicon-remove"></span></button>`)
+						.click(() => {
+							if (NavBar._downloadBarMeta) {
+								NavBar._downloadBarMeta.$wrpOuter.remove();
+								NavBar._downloadBarMeta = null;
+							}
+							sendMessage({"type": "cache-cancel"});
+						});
+
+					const $wrpBar = $$`<div class="page__wrp-download-bar w-100 relative mr-2">${$dispProgress}${$dispPct}</div>`;
+					const $wrpOuter = $$`<div class="page__wrp-download">
+						${$wrpBar}
+						${$btnCancel}
+					</div>`.appendTo($("body"));
+
+					NavBar._downloadBarMeta = {$wrpOuter, $wrpBar, $dispProgress, $dispPct};
+
+					// Trigger the service worker to cache everything
+					messageChannel.port1.onmessage = e => {
+						const msg = e.data;
+						switch (msg.type) {
+							case "download-progress": {
+								if (NavBar._downloadBarMeta) {
+									NavBar._downloadBarMeta.$dispProgress.css("width", msg.data.pct);
+									NavBar._downloadBarMeta.$dispPct.text(msg.data.pct);
+								}
+								break;
+							}
+							case "download-cancelled": {
+								if (NavBar._downloadBarMeta) {
+									NavBar._downloadBarMeta.$wrpOuter.remove();
+									NavBar._downloadBarMeta = null;
+								}
+								break;
+							}
+							case "download-error": {
+								if (NavBar._downloadBarMeta) {
+									NavBar._downloadBarMeta.$wrpBar.addClass("page__wrp-download-bar--error");
+									NavBar._downloadBarMeta.$dispProgress.addClass("page__disp-download-progress-bar--error");
+									NavBar._downloadBarMeta.$dispPct.text("Error!");
+								}
+								break;
+							}
+						}
+					};
+
+					sendMessage({"type": "cache-start"});
+				},
+				title: "Preload the site data for offline use. Warning: slow. If it appears to freeze, cancel it and try again; progress will be saved."
+			}
+		);
 
 		/**
 		 * Adds a new item to the navigation bar. Can be used either in root, or in a different UL.
 		 * @param appendTo - Element to append this link to.
 		 * @param aHref - Where does this link to.
 		 * @param aText - What text does this link have.
-		 * @param [isSide] - True if this item
-		 * @param [aHash] - Optional hash to be appended to the base href
+		 * @param [opts] - Options object.
+		 * @param [opts.isSide] - True if this item is part of a side menu.
+		 * @param [opts.aHash] - Optional hash to be appended to the base href
+		 * @param [opts.isRoot] - If the item is a root navbar element.
+		 * @param [opts.isExternal] - If the item is an external link.
 		 */
-		function addLi (appendTo, aHref, aText, isSide, aHash) {
-			const hashPart = aHash ? `#${aHash}`.toLowerCase() : "";
+		function addLi (appendTo, aHref, aText, opts) {
+			opts = opts || {};
+			const hashPart = opts.aHash ? `#${opts.aHash}`.toLowerCase() : "";
 
 			const li = document.createElement("li");
 			li.setAttribute("role", "presentation");
 			li.setAttribute("id", aText.toLowerCase().replace(/\s+/g, ""));
 			li.setAttribute("data-page", `${aHref}${hashPart}`);
-			if (isSide) {
+			if (opts.isRoot) {
+				li.classList.add("page__nav-hidden-mobile");
+				li.classList.add("page__btn-nav-root");
+			}
+			if (opts.isSide) {
 				li.onmouseenter = function () { NavBar.handleSideItemMouseEnter(this) }
 			} else {
-				li.onmouseenter = function () { NavBar.handleItemMouseEnter(this) }
+				li.onmouseenter = function () { NavBar.handleItemMouseEnter(this) };
+				li.onclick = function () { NavBar._dropdowns.forEach(ele => ele.classList.remove("open")) }
 			}
 
 			const a = document.createElement("a");
 			a.href = `${aHref}${hashPart}`;
 			a.innerHTML = aText;
+			a.classList.add("nav__link");
+
+			if (opts.isExternal) {
+				a.setAttribute("target", "_blank");
+				a.classList.add("inline-split-v-center");
+				a.classList.add("w-100");
+				a.innerHTML = `<span>${aText}</span><span class="glyphicon glyphicon-new-window"/>`
+			}
 
 			li.appendChild(a);
 			appendTo.appendChild(li);
@@ -153,7 +350,7 @@ class NavBar {
 		function addDropdown (appendTo, text, isSide = false) {
 			const li = document.createElement("li");
 			li.setAttribute("role", "presentation");
-			li.className = "dropdown";
+			li.className = `dropdown dropdown--navbar page__nav-hidden-mobile ${isSide ? "" : "page__btn-nav-root"}`;
 			if (isSide) {
 				li.onmouseenter = function () { NavBar.handleSideItemMouseEnter(this); };
 			} else {
@@ -182,42 +379,55 @@ class NavBar {
 		}
 
 		/**
-		 * Special LI for the Day/Night Switcher
+		 * Special LI for buttong
+		 * @param appendTo The element to append to.
+		 * @param options Options.
+		 * @param options.html Button text.
+		 * @param options.click Button click handler.
+		 * @param options.title Button title.
+		 * @param options.className Additional button classes.
 		 */
-		function addNightModeToggle (appendTo) {
+		function addButton (appendTo, options) {
 			const li = document.createElement("li");
 			li.setAttribute("role", "presentation");
 
 			const a = document.createElement("a");
 			a.href = "#";
-			a.className = "nightModeToggle";
-			a.onclick = function (event) { event.preventDefault(); styleSwitcher.toggleActiveStyleSheet(); };
-			a.innerHTML = styleSwitcher.getActiveStyleSheet() === StyleSwitcher.STYLE_DAY ? "Night Mode" : "Day Mode";
+			if (options.className) a.className = options.className;
+			a.onclick = options.click;
+			a.innerHTML = options.html;
+
+			if (options.title) li.setAttribute("title", options.title);
 
 			li.appendChild(a);
 			appendTo.appendChild(li);
 		}
 	}
 
-	static highlightCurrentPage () {
+	static getCurrentPage () {
 		let currentPage = window.location.pathname;
 		currentPage = currentPage.substr(currentPage.lastIndexOf("/") + 1);
 
 		if (!currentPage) currentPage = "5etools.html";
+		return currentPage.trim();
+	}
+
+	static highlightCurrentPage () {
+		let currentPage = NavBar.getCurrentPage();
 
 		let isSecondLevel = false;
 		if (currentPage.toLowerCase() === "book.html" || currentPage.toLowerCase() === "adventure.html") {
 			const hashPart = window.location.hash.split(",")[0];
-			if (hashPart) {
-				if (currentPage.toLowerCase() === "adventure.html") isSecondLevel = true;
-				currentPage += hashPart.toLowerCase();
-			}
+			if (currentPage.toLowerCase() === "adventure.html") isSecondLevel = true;
+			currentPage += hashPart.toLowerCase();
 		}
 		if (currentPage.toLowerCase() === "adventures.html") isSecondLevel = true;
 
+		if (typeof _SEO_PAGE !== "undefined") currentPage = `${_SEO_PAGE}.html`;
+
 		try {
 			let current = document.querySelector(`li[data-page="${currentPage}"]`);
-			if (current == null && currentPage.includes("#")) {
+			if (current == null) {
 				currentPage = currentPage.split("#")[0];
 				if (NavBar.ALT_CHILD_PAGES[currentPage]) currentPage = NavBar.ALT_CHILD_PAGES[currentPage];
 				current = document.querySelector(`li[data-page="${currentPage}"]`);
@@ -227,7 +437,7 @@ class NavBar {
 
 			let closestLi = current.parentNode;
 			const setNearestParentActive = () => {
-				while (closestLi !== null && closestLi.nodeName !== "LI") closestLi = closestLi.parentNode;
+				while (closestLi !== null && (closestLi.nodeName !== "LI" || !closestLi.classList.contains("dropdown"))) closestLi = closestLi.parentNode;
 				closestLi && closestLi.classList.add("active");
 			};
 			setNearestParentActive();
@@ -239,7 +449,7 @@ class NavBar {
 	}
 
 	static initHandlers () {
-		NavBar._dropdowns = [...document.getElementById("navbar").querySelectorAll(`li.dropdown`)];
+		NavBar._dropdowns = [...document.getElementById("navbar").querySelectorAll(`li.dropdown--navbar`)];
 		document.addEventListener("click", () => NavBar._dropdowns.forEach(ele => ele.classList.remove("open")));
 		document.addEventListener("mousemove", evt => {
 			NavBar._mouseX = evt.clientX;
@@ -253,7 +463,9 @@ class NavBar {
 		event.preventDefault();
 		event.stopPropagation();
 		if (isSide) return;
-		NavBar._openDropdown(ele);
+		const isOpen = ele.parentNode.classList.contains("open");
+		if (isOpen) NavBar._dropdowns.forEach(ele => ele.classList.remove("open"));
+		else NavBar._openDropdown(ele);
 	}
 
 	static _openDropdown (fromLink) {
@@ -362,4 +574,6 @@ NavBar._timersClose = {};
 NavBar._timerMousePos = {};
 NavBar._mouseX = null;
 NavBar._mouseY = null;
+NavBar._cachedInstallEvent = null;
+NavBar._downloadBarMeta = null;
 NavBar.init();

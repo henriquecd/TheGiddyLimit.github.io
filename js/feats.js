@@ -1,190 +1,153 @@
 "use strict";
-const JSON_URL = "data/feats.json";
-let list;
 
-window.onload = async function load () {
-	await ExcludeUtil.pInitialise();
-	SortUtil.initHandleFilterButtonClicks();
-	DataUtil.loadJSON(JSON_URL).then(onJsonLoad);
-};
-
-const sourceFilter = getSourceFilter();
-let filterBox;
-async function onJsonLoad (data) {
-	list = ListUtil.search({
-		valueNames: ['name', 'source', 'ability', 'prerequisite', "uniqueid"],
-		listClass: "feats"
-	});
-
-	const asiFilter = getAsiFilter();
-	const prereqFilter = new Filter({
-		header: "Prerequisite",
-		items: ["Ability", "Race", "Proficiency", "Spellcasting"]
-	});
-	filterBox = await pInitFilterBox(
-		sourceFilter,
-		asiFilter,
-		prereqFilter
-	);
-
-	list.on("updated", () => {
-		filterBox.setCount(list.visibleItems.length, list.items.length);
-	});
-
-	// filtering function
-	$(filterBox).on(
-		FilterBox.EVNT_VALCHANGE,
-		handleFilterChange
-	);
-
-	const subList = ListUtil.initSublist({
-		valueNames: ["name", "ability", "prerequisite", "id"],
-		listClass: "subfeats",
-		getSublistRow: getSublistItem
-	});
-	ListUtil.initGenericPinnable();
-
-	addFeats(data);
-	BrewUtil.pAddBrewData()
-		.then(handleBrew)
-		.then(BrewUtil.pAddLocalBrewData)
-		.catch(BrewUtil.pPurgeBrew)
-		.then(async () => {
-			BrewUtil.makeBrewButton("manage-brew");
-			BrewUtil.bind({list, filterBox, sourceFilter});
-			await ListUtil.pLoadState();
-			RollerUtil.addListRollButton();
-
-			History.init(true);
-			ExcludeUtil.checkShowAllExcluded(featList, $(`#pagecontent`));
+class FeatsPage extends ListPage {
+	constructor () {
+		const sourceFilter = getSourceFilter();
+		const asiFilter = getAsiFilter();
+		const otherPrereqFilter = new Filter({
+			header: "Other",
+			items: ["Ability", "Race", "Proficiency", "Special", "Spellcasting"]
 		});
-}
+		const levelFilter = new Filter({
+			header: "Level",
+			itemSortFn: SortUtil.ascSortNumericalSuffix
+		});
+		const prerequisiteFilter = new MultiFilter({header: "Prerequisite", filters: [otherPrereqFilter, levelFilter]});
+		const miscFilter = new Filter({header: "Miscellaneous", items: ["SRD"]});
 
-function handleBrew (homebrew) {
-	addFeats(homebrew);
-	return Promise.resolve();
-}
+		super({
+			dataSource: "data/feats.json",
 
-let featList = [];
-let ftI = 0;
-function addFeats (data) {
-	if (!data.feat || !data.feat.length) return;
+			filters: [
+				sourceFilter,
+				asiFilter,
+				prerequisiteFilter,
+				miscFilter
+			],
+			filterSource: sourceFilter,
 
-	featList = featList.concat(data.feat);
+			listClass: "feats",
 
-	const featTable = $("ul.feats");
-	let tempString = "";
-	for (; ftI < featList.length; ftI++) {
-		const feat = featList[ftI];
-		if (ExcludeUtil.isExcluded(feat.name, "feat", feat.source)) continue;
+			sublistClass: "subfeats",
+
+			dataProps: ["feat"]
+		});
+
+		this._sourceFilter = sourceFilter;
+		this._levelFilter = levelFilter;
+	}
+
+	getListItem (feat, ftI) {
 		const name = feat.name;
-		const ability = utils_getAbilityData(feat.ability);
+		const ability = Renderer.getAbilityData(feat.ability);
 		if (!ability.asText) ability.asText = STR_NONE;
 		feat._fAbility = ability.asCollection.filter(a => !ability.areNegative.includes(a)); // used for filtering
-		let prereqText = EntryRenderer.feat.getPrerequisiteText(feat.prerequisite, true);
+		let prereqText = Renderer.utils.getPrerequisiteText(feat.prerequisite, true);
 		if (!prereqText) prereqText = STR_NONE;
 
 		const preSet = new Set();
 		(feat.prerequisite || []).forEach(it => preSet.add(...Object.keys(it)));
-		feat._fPrereq = [...preSet].map(it => it.uppercaseFirst());
+		feat._fPrereqOther = [...preSet].map(it => it.uppercaseFirst());
+		if (feat.prerequisite) {
+			feat._fPrereqLevel = feat.prerequisite.filter(it => it.level != null).map(it => `Level ${it.level.level}`);
+			this._levelFilter.addItem(feat._fPrereqLevel);
+		}
+		feat._fMisc = feat.srd ? ["SRD"] : [];
 
 		feat._slAbility = ability.asText;
 		feat._slPrereq = prereqText;
 
-		tempString += `
-			<li class="row" ${FLTR_ID}="${ftI}" onclick="ListUtil.toggleSelected(event, this)" oncontextmenu="ListUtil.openContextMenu(event, this)">
-				<a id="${ftI}" href="#${UrlUtil.autoEncodeHash(feat)}" title="${name}">
-					<span class="name col-3-8">${name}</span>
-					<span class="source col-1-7 text-align-center ${Parser.sourceJsonToColor(feat.source)}" title="${Parser.sourceJsonToFull(feat.source)}">${Parser.sourceJsonToAbv(feat.source)}</span>
-					<span class="ability col-3-5 ${ability.asText === STR_NONE ? "list-entry-none " : ""}">${ability.asText}</span>
-					<span class="prerequisite col-3 ${(prereqText === STR_NONE ? "list-entry-none " : "")}">${prereqText}</span>
-					
-					<span class="uniqueid hidden">${feat.uniqueId ? feat.uniqueId : ftI}</span>
-				</a>
-			</li>`;
-
 		// populate filters
-		sourceFilter.addIfAbsent(feat.source);
-	}
-	const lastSearch = ListUtil.getSearchTermAndReset(list);
-	featTable.append(tempString);
+		this._sourceFilter.addItem(feat.source);
 
-	// sort filters
-	sourceFilter.items.sort(SortUtil.ascSort);
+		const eleLi = document.createElement("li");
+		eleLi.className = "row";
 
-	list.reIndex();
-	if (lastSearch) list.search(lastSearch);
-	list.sort("name");
-	filterBox.render();
-	handleFilterChange();
+		const source = Parser.sourceJsonToAbv(feat.source);
+		const hash = UrlUtil.autoEncodeHash(feat);
 
-	ListUtil.setOptions({
-		itemList: featList,
-		getSublistRow: getSublistItem,
-		primaryLists: [list]
-	});
-	ListUtil.bindPinButton();
-	EntryRenderer.hover.bindPopoutButton(featList);
-	UrlUtil.bindLinkExportButton(filterBox);
-	ListUtil.bindDownloadButton();
-	ListUtil.bindUploadButton();
-}
+		eleLi.innerHTML = `<a href="#${hash}" class="lst--border">
+			<span class="bold col-3-8 pl-0">${name}</span>
+			<span class="col-3-5 ${ability.asText === STR_NONE ? "list-entry-none " : ""}">${ability.asText}</span>
+			<span class="col-3 ${(prereqText === STR_NONE ? "list-entry-none " : "")}">${prereqText}</span>
+			<span class="source col-1-7 text-center ${Parser.sourceJsonToColor(feat.source)} pr-0" title="${Parser.sourceJsonToFull(feat.source)}" ${BrewUtil.sourceJsonToStyle(feat.source)}>${source}</span>
+		</a>`;
 
-// filtering function
-function handleFilterChange () {
-	const f = filterBox.getValues();
-	list.filter(function (item) {
-		const ft = featList[$(item.elm).attr(FLTR_ID)];
-		return filterBox.toDisplay(
-			f,
-			ft.source,
-			ft._fAbility,
-			ft._fPrereq
+		const listItem = new ListItem(
+			ftI,
+			eleLi,
+			feat.name,
+			{
+				hash,
+				source,
+				ability: ability.asText,
+				prerequisite: prereqText,
+				uniqueId: feat.uniqueId ? feat.uniqueId : ftI
+			}
 		);
-	});
-	FilterBox.nextIfHidden(featList);
-}
 
-function getSublistItem (feat, pinId) {
-	return `
-		<li class="row" ${FLTR_ID}="${pinId}" oncontextmenu="ListUtil.openSubContextMenu(event, this)">
-			<a href="#${UrlUtil.autoEncodeHash(feat)}" title="${feat.name}">
-				<span class="name col-4">${feat.name}</span>
-				<span class="ability col-4 ${feat._slAbility === STR_NONE ? "list-entry-none" : ""}">${feat._slAbility}</span>
-				<span class="prerequisite col-4 ${feat._slPrereq === STR_NONE ? "list-entry-none" : ""}">${feat._slPrereq}</span>
-				<span class="id hidden">${pinId}</span>
+		eleLi.addEventListener("click", (evt) => this._list.doSelect(listItem, evt));
+		eleLi.addEventListener("contextmenu", (evt) => ListUtil.openContextMenu(evt, this._list, listItem));
+
+		return listItem;
+	}
+
+	handleFilterChange () {
+		const f = this._filterBox.getValues();
+		this._list.filter((item) => {
+			const ft = this._dataList[item.ix];
+			return this._filterBox.toDisplay(
+				f,
+				ft.source,
+				ft._fAbility,
+				[
+					ft._fPrereqOther,
+					ft._fPrereqLevel
+				],
+				ft._fMisc
+			);
+		});
+		FilterBox.selectFirstVisible(this._dataList);
+	}
+
+	getSublistItem (feat, pinId) {
+		const hash = UrlUtil.autoEncodeHash(feat);
+
+		const $ele = $(`<li class="row">
+			<a href="#${hash}" class="lst--border">
+				<span class="bold col-4 pl-0">${feat.name}</span>
+				<span class="col-4 ${feat._slAbility === STR_NONE ? "list-entry-none" : ""}">${feat._slAbility}</span>
+				<span class="col-4 ${feat._slPrereq === STR_NONE ? "list-entry-none" : ""} pr-0">${feat._slPrereq}</span>
 			</a>
-		</li>
-	`;
+		</li>`)
+			.contextmenu(evt => ListUtil.openSubContextMenu(evt, listItem));
+
+		const listItem = new ListItem(
+			pinId,
+			$ele,
+			feat.name,
+			{
+				hash,
+				ability: feat._slAbility,
+				prerequisite: feat._slPrereq
+			}
+		);
+		return listItem;
+	}
+
+	doLoadHash (id) {
+		const feat = this._dataList[id];
+
+		$("#pagecontent").empty().append(RenderFeats.$getRenderedFeat(feat));
+
+		ListUtil.updateSelected();
+	}
+
+	doLoadSubHash (sub) {
+		sub = this._filterBox.setFromSubHashes(sub);
+		ListUtil.setFromSubHashes(sub);
+	}
 }
 
-const renderer = EntryRenderer.getDefaultRenderer();
-function loadhash (id) {
-	renderer.setFirstSection(true);
-
-	const $content = $("#pagecontent").empty();
-
-	const feat = featList[id];
-
-	const prerequisite = EntryRenderer.feat.getPrerequisiteText(feat.prerequisite);
-	EntryRenderer.feat.mergeAbilityIncrease(feat);
-	const renderStack = [];
-	renderer.recursiveEntryRender({entries: feat.entries}, renderStack, 2);
-
-	$content.append(`
-		${EntryRenderer.utils.getBorderTr()}
-		${EntryRenderer.utils.getNameTr(feat)}
-		${prerequisite ? `<tr><td colspan="6"><span class="prerequisite">Prerequisite: ${prerequisite}</span></td></tr>` : ""}
-		<tr><td class="divider" colspan="6"><div></div></td></tr>
-		<tr class='text'><td colspan='6'>${renderStack.join("")}</td></tr>
-		${EntryRenderer.utils.getPageTr(feat)}
-		${EntryRenderer.utils.getBorderTr()}
-	`);
-
-	ListUtil.updateSelected();
-}
-
-function loadsub (sub) {
-	filterBox.setFromSubHashes(sub);
-	ListUtil.setFromSubHashes(sub);
-}
+const featsPage = new FeatsPage();
+window.addEventListener("load", () => featsPage.pOnLoad());

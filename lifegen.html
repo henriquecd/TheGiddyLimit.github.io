@@ -2,7 +2,9 @@
 <html lang="en">
 
 <head>
-	<!--5ETOOLS_VERSION-->
+	<!--5ETOOLS_CMP-->
+	<!--5ETOOLS_ANALYTICS-->
+	<!--5ETOOLS_ADCODE-->
 	<meta charset="utf-8">
 	<meta name="description" content="">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,14 +12,19 @@
 
 	<title>This Is Your Life - 5etools</title>
 
+	<link rel="manifest" href="manifest.webmanifest">
+
 	<link rel="stylesheet" href="css/bootstrap.css">
 	<link rel="stylesheet" href="css/jquery-ui.css">
 	<link rel="stylesheet" href="css/jquery-ui-slider-pips.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="icon" href="favicon.png">
 
+	<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
+
 	<script type="text/javascript" src="js/styleswitch.js"></script>
 	<script type="text/javascript" src="js/navigation.js"></script>
+	<script type="text/javascript" src="js/browsercheck.js"></script>
 
 	<style>
 		h4 {
@@ -68,66 +75,69 @@
 		.btn-reroll::before {
 			content: "Reroll";
 		}
+
+		.output {
+			margin: 1em 0;
+			padding: 0.2em 0.7em;
+			border-radius: 0.2em;
+			display: none;
+		}
 	</style>
 </head>
 
 <body>
-<header class="hidden-xs hidden-sm">
+<header class="hidden-xs hidden-sm page__header">
 	<div class="container">
 
-		<h1>This Is Your Life</h1>
-		<p>Select options, and hit generate.</p>
+		<h1 class="page__title">This Is Your Life</h1>
+		<p class="page__subtitle">Select options, and hit generate.</p>
 	</div>
 </header>
-<nav class="container" id="navigation">
-	<ul class="nav nav-pills" id="navbar">
+<nav class="container page__nav" id="navigation">
+	<ul class="nav page__nav-inner" id="navbar">
 	</ul>
 </nav>
-<main class="container bodyContent">
 
-	<div class="row noprint">
+<div class="cancer__wrp-leaderboard"><!--5ETOOLS_AD_LEADERBOARD--></div>
+<div class="cancer__wrp-sidebar-rhs"><!--5ETOOLS_AD_RIGHT_1--><div class="cancer__sidebar-rhs-inner"><!--5ETOOLS_AD_RIGHT_2--></div></div>
+
+<main class="container">
+
+	<div class="row no-print">
 		<div class="form-group col-2-4">
 			<label for="race">Race</label>
-			<select class="form-control form-inline" id="race"></select>
+			<select class="form-control form-inline" id="race" disabled><option>Loading...</option></select>
 		</div>
 
 		<div class="form-group col-2-4">
 			<label for="cha">Charisma Modifier</label>
-			<select class="form-control form-inline" id="cha"></select>
+			<select class="form-control form-inline" id="cha" disabled><option>Loading...</option></select>
 		</div>
 
 		<div class="form-group col-2-4">
 			<label for="race">Background</label>
-			<select class="form-control form-inline" id="background"></select>
+			<select class="form-control form-inline" id="background" disabled><option>Loading...</option></select>
 		</div>
 
 		<div class="form-group col-2-4">
 			<label for="race">Class</label>
-			<select class="form-control form-inline" id="class"></select>
+			<select class="form-control form-inline" id="class" disabled><option>Loading...</option></select>
 		</div>
 
 		<div class="form-group col-2-4">
 			<label for="age"><i>Age</i></label>
-			<select class="form-control form-inline" id="age">
-				<option value="" style="font-style: normal;">Random</option>
-				<option value="1" class="italic">20 years or younger</option>
-				<option value="21" class="italic">21&mdash;30 years</option>
-				<option value="60" class="italic">31&mdash;40 years</option>
-				<option value="70" class="italic">41&mdash;50 years</option>
-				<option value="90" class="italic">51&mdash;60 years</option>
-				<option value="100" class="italic">61 years or older</option>
-			</select>
+			<select class="form-control form-inline" id="age" disabled><option>Loading...</option></select>
 		</div>
 	</div>
-	<div class="row noprint">
+	<div class="row no-print">
 		<div class="form-group col-12">
 			<button class="btn btn-default" onclick="roll()">Generate</button>
 		</div>
 	</div>
 
-	<div class="row noprint" style="padding: 0 3em;">
-		<p>Based on the tables and rules in Xanathar's Guide to Everything, pages 61-73.</p>
-		<p><i>NOTE: Rolls or options displayed in italics exist for the sake of speed and ease of use. They do not correspond to rolls on any table, nor do they have officially associated weightings or chances. Ignore or use them as you see fit.</i></p>
+	<div class="row no-print" style="padding: 0 3em;">
+		<p>Based on the tables and rules in <a href="#" id="xge_link">Xanathar's Guide to Everything</a>, pages 61-73.</p>
+		<p><i>NOTE: Text displayed in italics is generated for the sake of ease and speed of use, and does not correspond to a table in the original generator. Ignore it as you see fit.</i></p>
 	</div>
 
 	<hr class="output" style="display: none;">
@@ -160,18 +170,18 @@
 		<p id="events"></p>
 	</div>
 </main>
-<footer class="container">
-
-</footer>    <!--5ETOOLS_SCRIPT_ANCHOR-->
+<!--5ETOOLS_SCRIPT_ANCHOR-->
+<!--5ETOOLS_AD_ADHESION-->
 <script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/utils-ui.js"></script>
 <script type="text/javascript" src="lib/localforage.js"></script>
 <script type="text/javascript" src="js/genutils.js"></script>
 <script type="text/javascript" src="js/omnidexer.js"></script>
 <script type="text/javascript" src="js/omnisearch.js"></script>
-<script type="text/javascript" src="js/entryrender.js"></script>
+<script type="text/javascript" src="js/render.js"></script>
 <script type="text/javascript" src="js/scalecreature.js"></script>
 <script type="text/javascript" src="js/lifegen.js"></script>
-<script type="text/javascript" src="lib/list.js"></script>
+<script type="text/javascript" src="js/list2.js"></script>
 <script type="text/javascript" src="lib/jquery.js"></script>
 <script type="text/javascript" src="lib/jquery-ui.js"></script>
 <script type="text/javascript" src="lib/jquery-ui-slider-pip.js"></script>

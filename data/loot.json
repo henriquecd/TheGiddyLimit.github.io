@@ -2114,7 +2114,7 @@
 				},
 				{
 					"min": 71,
-					"max": 86,
+					"max": 85,
 					"item": "{@item Spell Scroll (9th level)}",
 					"spellLevel": 9
 				},
@@ -2722,7 +2722,7 @@
 				{
 					"min": 48,
 					"max": 48,
-					"item": "Horn of Valhalla ({@item Horn of Valhalla, Silver|dmg|silver} or {@item Horn of Valhalla, Brass|dmg|brass})"
+					"item": "Horn of Valhalla ({@item Horn of Valhalla, Silver||silver} or {@item Horn of Valhalla, Brass||brass})"
 				},
 				{
 					"min": 49,
@@ -2767,7 +2767,21 @@
 				{
 					"min": 57,
 					"max": 57,
-					"item": "Leather Armor of Resistance"
+					"item": "Leather Armor of Resistance",
+					"choose": {
+						"fromItems": [
+							"Leather Armor of Acid Resistance",
+							"Leather Armor of Cold Resistance",
+							"Leather Armor of Fire Resistance",
+							"Leather Armor of Force Resistance",
+							"Leather Armor of Lightning Resistance",
+							"Leather Armor of Necrotic Resistance",
+							"Leather Armor of Poison Resistance",
+							"Leather Armor of Psychic Resistance",
+							"Leather Armor of Radiant Resistance",
+							"Leather Armor of Thunder Resistance"
+						]
+					}
 				},
 				{
 					"min": 58,
@@ -2797,7 +2811,7 @@
 				{
 					"min": 63,
 					"max": 63,
-					"item": "{@item Periapt of Proof Against Poison}"
+					"item": "{@item Periapt of Proof against Poison}"
 				},
 				{
 					"min": 64,
@@ -3172,7 +3186,7 @@
 				{
 					"min": 59,
 					"max": 59,
-					"item": "Belt of {@item Belt of Frost Giant Strength|dmg|frost} or {@item Belt of Stone Giant Strength|dmg|stone} giant strength",
+					"item": "Belt of {@item Belt of Frost Giant Strength||frost} or {@item Belt of Stone Giant Strength||stone} giant strength",
 					"choose": {
 						"fromItems": [
 							"Belt of Frost Giant Strength",

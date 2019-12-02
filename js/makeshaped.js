@@ -1,4 +1,3 @@
-/* global $:false */
 'use strict';
 
 class ShapedConverter {
@@ -15,60 +14,56 @@ class ShapedConverter {
 		};
 	}
 
-	getInputs () {
-		const SOURCE_INFO = this.constructor.SOURCE_INFO;
-		if (!this._inputPromise) {
-			const sources = [
-				{url: `${SOURCE_INFO.bestiary.dir}index.json`},
-				{url: `${SOURCE_INFO.spells.dir}index.json`},
-				{url: `${SOURCE_INFO.bestiary.dir}srd-monsters.json`},
-				{url: `${SOURCE_INFO.spells.dir}srd-spells.json`},
-				{url: `${SOURCE_INFO.spells.dir}roll20.json`},
-				{url: `${SOURCE_INFO.bestiary.dir}meta.json`}
-			];
-
-			this._inputPromise = DataUtil.multiLoadJSON(sources, null, data => {
-				ShapedConverter.bestiaryIndex = data[0];
-
-				SOURCE_INFO.bestiary.fileIndex = data[0];
-				SOURCE_INFO.spells.fileIndex = data[1];
-				const inputs = {};
-				inputs._srdMonsters = data[2].monsters;
-				inputs._srdSpells = data[3].spells;
-				inputs._srdSpellRenames = data[3].spellRenames;
-				inputs._additionalSpellData = {};
-
-				data[4].spell.forEach(spell => inputs._additionalSpellData[spell.name] = Object.assign(spell.data, spell.shapedData));
-				inputs._legendaryGroup = {};
-				data[5].legendaryGroup.forEach(monsterDetails => inputs._legendaryGroup[monsterDetails.name] = monsterDetails);
-				Object.defineProperties(inputs, {
-					_srdMonsters: { writable: false, enumerable: false },
-					_srdSpells: { writable: false, enumerable: false },
-					_srdSpellRenames: { writable: false, enumerable: false },
-					_additionalSpellData: { writable: false, enumerable: false },
-					_legendaryGroup: { writable: false, enumerable: false }
-				});
-
-				return Object.values(SOURCE_INFO).reduce((inputs, sourceType) => {
-					Object.keys(sourceType.fileIndex).forEach(key => {
-						const input = this.constructor.getInput(inputs, key, Parser.SOURCE_JSON_TO_FULL[key]);
-						input[sourceType.inputProp] = `${sourceType.dir}${sourceType.fileIndex[key]}`;
-					});
-					return inputs;
-				}, inputs);
-			}).then(inputs => {
-				return BrewUtil.pAddBrewData().then(data => {
-					this.addBrewData(inputs, data);
-					return inputs;
-				});
-			});
-		}
+	pGetInputs () {
+		if (!this._inputPromise) this._inputPromise = this._pGetInputs();
 		return this._inputPromise;
+	}
+
+	async _pGetInputs () {
+		const SOURCE_INFO = this.constructor.SOURCE_INFO;
+		const urls = [
+			`${SOURCE_INFO.bestiary.dir}index.json`,
+			`${SOURCE_INFO.spells.dir}index.json`,
+			`${SOURCE_INFO.spells.dir}roll20.json`,
+			`${SOURCE_INFO.bestiary.dir}meta.json`
+		];
+
+		this._inputPromise = Promise.all(urls.map(url => DataUtil.loadJSON(url)));
+		const data = (await this._inputPromise).flat();
+
+		ShapedConverter.bestiaryIndex = data[0];
+
+		SOURCE_INFO.bestiary.fileIndex = data[0];
+		SOURCE_INFO.spells.fileIndex = data[1];
+		const inputs = {};
+		inputs._additionalSpellData = {};
+
+		data[2].spell.forEach(spell => inputs._additionalSpellData[spell.name] = Object.assign(spell.data, spell.shapedData));
+		inputs._legendaryGroup = {};
+		data[3].legendaryGroup.forEach(monsterDetails => {
+			inputs._legendaryGroup[monsterDetails.source] = inputs._legendaryGroup[monsterDetails.source] || {};
+			inputs._legendaryGroup[monsterDetails.source][monsterDetails.name] = monsterDetails
+		});
+
+		Object.values(SOURCE_INFO).reduce((inputs, sourceType) => {
+			Object.keys(sourceType.fileIndex).forEach(key => {
+				const input = this.constructor.getInput(inputs, key, Parser.SOURCE_JSON_TO_FULL[key]);
+				input[sourceType.inputProp] = `${sourceType.dir}${sourceType.fileIndex[key]}`;
+			});
+			return inputs;
+		}, inputs);
+
+		const brewData = await BrewUtil.pAddBrewData();
+		this.addBrewData(inputs, brewData);
+		return inputs;
 	}
 
 	addBrewData (inputs, data) {
 		if (data.spell && data.spell.length) {
 			data.spell.forEach(spell => {
+				// Skip anything pretending to be from official sources, as it breaks the builder
+				if (Parser.SOURCE_JSON_TO_FULL[spell.source]) return;
+
 				const input = this.constructor.getInput(inputs, spell.source, BrewUtil.sourceJsonToFull(spell.source));
 				input.spellInput = input.spellInput || [];
 				input.spellInput.push(spell);
@@ -76,6 +71,9 @@ class ShapedConverter {
 		}
 		if (data.monster && data.monster.length) {
 			data.monster.forEach(monster => {
+				// Skip anything pretending to be from official sources, as it breaks the builder
+				if (Parser.SOURCE_JSON_TO_FULL[monster.source]) return;
+
 				const input = this.constructor.getInput(inputs, monster.source, BrewUtil.sourceJsonToFull(monster.source));
 				input.monsterInput = input.monsterInput || [];
 				input.monsterInput.push(monster);
@@ -83,8 +81,9 @@ class ShapedConverter {
 		}
 		if (data.legendaryGroup && data.legendaryGroup.length) {
 			data.legendaryGroup.forEach(legendary => {
-				if (!inputs._legendaryGroup[legendary.name]) {
-					inputs._legendaryGroup[legendary.name] = legendary;
+				inputs._legendaryGroup[legendary.source] = inputs._legendaryGroup[legendary.source] || {};
+				if (!inputs._legendaryGroup[legendary.source][legendary.name]) {
+					inputs._legendaryGroup[legendary.source][legendary.name] = legendary;
 				}
 			})
 		}
@@ -94,70 +93,50 @@ class ShapedConverter {
 		inputs[key] = inputs[key] || {
 			name,
 			key,
-			dependencies: key === SRC_PHB ? ['SRD'] : ['Player\'s Handbook'],
+			dependencies: key === SRC_PHB ? ['SRD'] : ["Player's Handbook"],
 			classes: {}
 		};
 		return inputs[key];
 	}
 
-	generateShapedJS (sourceKeys) {
-		return this.getInputs().then(inputs => {
-			const sources = [];
+	async pGenerateShapedJS (sourceKeys) {
+		const inputs = await this.pGetInputs();
 
-			sourceKeys.forEach(sourceKey => {
-				const input = inputs[sourceKey];
-				if (isString(input.monsterInput)) {
-					sources.push({
-						url: input.monsterInput,
-						key: sourceKey
-					})
-				}
-				if (isString(input.spellInput)) {
-					sources.push({
-						url: input.spellInput,
-						key: sourceKey
-					})
-				}
-			});
+		const sources = [];
 
-			let jsonPromise;
-			if (sources.length) {
-				const originalSources = MiscUtil.copy(sources);
-				jsonPromise = DataUtil.multiLoadJSON(
-					originalSources,
-					null,
-					(data) => {
-						data.forEach((dataItem, index) => {
-							const key = sources[index].key;
-							if (dataItem.spell) inputs[key].spellInput = dataItem.spell;
-							if (dataItem.monster) inputs[key].monsterInput = dataItem.monster;
-							if (sources[index].doNotConvert) inputs[key].doNotConvert = true;
-						});
-					},
-					(src) => {
-						// WARNING: this will break if there are dependencies in anything besides bestiary files
-						const out = {
-							key: src,
-							url: `${ShapedConverter.SOURCE_INFO.bestiary.dir}${ShapedConverter.bestiaryIndex[src]}`,
-							doNotConvert: true
-						};
-						sources.push(out);
-						return out;
-					}
-				);
-			} else {
-				jsonPromise = Promise.resolve();
+		sourceKeys.forEach(sourceKey => {
+			const input = inputs[sourceKey];
+			if (isString(input.monsterInput)) {
+				sources.push({
+					url: input.monsterInput,
+					key: sourceKey
+				})
 			}
-
-			return jsonPromise.then(() => {
-				this.constructor.convertData(inputs);
-				const lines = sourceKeys
-					.map(key => {
-						return `ShapedScripts.addEntities(${JSON.stringify(inputs[key].converted, this.constructor.serialiseFixer)})`;
-					}).join('\n');
-				return `on('ready', function() {\n${lines}\n});`
-			})
+			if (isString(input.spellInput)) {
+				sources.push({
+					url: input.spellInput,
+					key: sourceKey
+				})
+			}
 		});
+
+		if (sources.length) {
+			const originalSources = MiscUtil.copy(sources);
+			const data = (await Promise.all(originalSources.map(source => DataUtil.loadJSON(source.url)))).flat();
+			data.forEach((dataItem, index) => {
+				const key = sources[index].key;
+				if (dataItem.spell) inputs[key].spellInput = dataItem.spell;
+				if (dataItem.monster) inputs[key].monsterInput = dataItem.monster;
+				if (sources[index].doNotConvert) inputs[key].doNotConvert = true;
+			});
+		}
+
+		this.constructor.convertData(inputs);
+		const lines = sourceKeys
+			.map(key => {
+				return `ShapedScripts.addEntities(${JSON.stringify(inputs[key].converted, this.constructor.serialiseFixer)})`;
+			}).join('\n');
+		return `on('ready', function() {\n${lines}\n});`;
 	}
 
 	static makeSpellList (spellArray) {
@@ -203,16 +182,21 @@ class ShapedConverter {
 				} else {
 					throw new Error('Unrecognised spellUseInfo ' + useInfo);
 				}
-			})
-			.reduce(this.flattener, []);
+			}).flat();
 	}
 
 	static processLeveledSpells (spellObj) {
-		return Object.keys(spellObj).map(levelString => {
-			const level = parseInt(levelString, 10);
-			const levelInfo = spellObj[level];
-			return `${Parser.spLevelToFullLevelText(level)} (${this.slotString(levelInfo.slots)}): ${this.makeSpellList(levelInfo.spells)}`;
-		});
+		return Object.keys(spellObj)
+			.map(levelString => {
+				if (levelString === "hidden") return null;
+				else if (levelString === "will") {
+					return `At-will: ${this.makeSpellList(spellObj[levelString])}`;
+				} else {
+					const level = parseInt(levelString, 10);
+					const levelInfo = spellObj[level];
+					return `${Parser.spLevelToFullLevelText(level)} (${this.slotString(levelInfo.slots)}): ${this.makeSpellList(levelInfo.spells)}`;
+				}
+			}).filter(Boolean);
 	}
 
 	static normalSpellProc (spellcasting) {
@@ -250,8 +234,9 @@ class ShapedConverter {
 			.replace(/{@hit (\d+)}/g, '+$1')
 			.replace(/{@chance (\d+)[^}]+}/g, '$1 percent')
 			.replace(/{@recharge(?: (\d))?}/g, (m, lower) => `(Recharge ${lower ? `${Number(lower)}\u2013` : ""}6)`)
-			.replace(/{(@atk [A-Za-z,]+})/g, (m, p1) => EntryRenderer.attackTagToFull(p1))
+			.replace(/{(@atk [A-Za-z,]+})/g, (m, p1) => Renderer.attackTagToFull(p1))
 			.replace(/{@h}/g, "Hit: ")
+			.replace(/{@dc (\d+)}/g, "DC $1")
 			.replace(/{@\w+ ((?:[^|}]+\|?){0,3})}/g, (m, p1) => {
 				const parts = p1.split('|');
 				return parts.length === 3 ? parts[2] : parts[0];
@@ -259,8 +244,15 @@ class ShapedConverter {
 			.replace(/(d\d+)([+-])(\d)/g, '$1 $2 $3');
 	}
 
+	static cleanRecharge (string) {
+		return string
+			.replace(/\(\d+[a-zA-Z]+-Level Spell; /gi, "(")
+			.replace(/\(\d+d\d+\)/g, "") // replace inline dice
+			.trim()
+	}
+
 	static makeTraitAction (name) {
-		const nameMatch = this.fixLinks(name).match(/([^(]+)(?:\(([^)]+)\))?/);
+		const nameMatch = this.cleanRecharge(this.fixLinks(name)).match(/([^(]+)(?:\(([^)]+)\))?/);
 		if (nameMatch && nameMatch[2]) {
 			const rechargeMatch = nameMatch[2].match(/^(?:(.*), )?(\d(?: minute[s]?)?\/(?:Day|Turn|Rest|Hour|Week|Month|Night|Long Rest|Short Rest)|Recharge \d(?:\u20136)?|Recharge[s]? [^),]+)(?:, ([^)]+))?$/i);
 			if (rechargeMatch) {
@@ -293,10 +285,12 @@ class ShapedConverter {
 				if (isObject(entry)) {
 					if (entry.items) {
 						if (isObject(entry.items[0])) {
-							return entry.items.map(item => ({
-								name: item.name.replace(/^([^.]+)\.$/, '$1'),
-								text: this.fixLinks(item.entry)
-							}));
+							return entry.items.map(item => {
+								const cleanName = item.name.replace(/^([^.]+)\.$/, '$1');
+								const out = this.makeTraitAction(cleanName);
+								out.text = this.fixLinks(item.entry);
+								return out;
+							});
 						} else {
 							return entry.items.map(item => `• ${this.fixLinks(item)}`).join('\n');
 						}
@@ -307,11 +301,11 @@ class ShapedConverter {
 				} else {
 					return this.fixLinks(entry);
 				}
-			}).reduce(this.flattener, []);
+			}).flat();
 
 			newTrait.text = expandedList.filter(isString).join('\n');
 			return [newTrait].concat(expandedList.filter(isObject));
-		}).reduce(this.flattener, []);
+		}).flat();
 	}
 
 	static processSpecialList (action, entries) {
@@ -412,7 +406,7 @@ class ShapedConverter {
 		output.name = monster.name;
 		output.size = Parser.sizeAbvToFull(monster.size);
 		output.type = Parser.monTypeToFullObj(monster.type).asText.replace(/^[a-z]/, (char) => char.toLocaleUpperCase());
-		output.alignment = Parser.alignmentListToFull(monster.alignment).toLowerCase();
+		output.alignment = monster.alignment ? Parser.alignmentListToFull(monster.alignment).toLowerCase() : "Unknown";
 		output.AC = this.processAC(monster.ac);
 		this.processHP(monster, output);
 		output.speed = Parser.getSpeedString(monster);
@@ -438,18 +432,18 @@ class ShapedConverter {
 			output.damageImmunities = Parser.monImmResToFull(monster.immune);
 		}
 		if (monster.conditionImmune) {
-			output.conditionImmunities = Parser.monCondImmToFull(monster.conditionImmune);
+			output.conditionImmunities = Parser.monCondImmToFull(monster.conditionImmune, true);
 		}
-		output.senses = monster.senses;
-		output.languages = monster.languages;
-		output.challenge = this.processChallenge(monster.cr.cr || monster.cr);
+		output.senses = (monster.senses || []).join(", ");
+		output.languages = (monster.languages || []).join(", ");
+		output.challenge = this.processChallenge(monster.cr ? (monster.cr.cr || monster.cr) : null);
 
 		const traits = [];
 		const actions = [];
 		const reactions = [];
 
 		if (monster.trait) {
-			traits.push.apply(traits, this.processStatblockSection(monster.trait));
+			traits.push(...this.processStatblockSection(monster.trait));
 		}
 		if (monster.spellcasting) {
 			monster.spellcasting.forEach(spellcasting => {
@@ -459,7 +453,7 @@ class ShapedConverter {
 				const spellLines = spellProc(spellcasting);
 				spellLines.unshift(this.fixLinks(spellcasting.headerEntries[0]));
 				if (spellcasting.footerEntries) {
-					spellLines.push.apply(spellLines, spellcasting.footerEntries);
+					spellLines.push(...spellcasting.footerEntries);
 				}
 				const trait = this.makeTraitAction(spellcasting.name);
 				trait.text = spellLines.join('\n');
@@ -469,10 +463,10 @@ class ShapedConverter {
 		}
 
 		if (monster.action) {
-			actions.push.apply(actions, this.processStatblockSection(monster.action));
+			actions.push(...this.processStatblockSection(monster.action));
 		}
 		if (monster.reaction) {
-			reactions.push.apply(reactions, this.processStatblockSection(monster.reaction));
+			reactions.push(...this.processStatblockSection(monster.reaction));
 		}
 
 		const addVariant = (name, text, output, forceActions) => {
@@ -491,7 +485,7 @@ class ShapedConverter {
 			if (isString(entry)) {
 				return entry;
 			}
-			const entryText = `${entry.entries.map(subEntry => entryStringifier(subEntry)).join('\n')}`;
+			const entryText = `${(entry.entries || entry.headerEntries).map(subEntry => entryStringifier(subEntry)).join('\n')}`;
 			return omitName ? entryText : `${entry.name}. ${entryText}`;
 		};
 
@@ -502,7 +496,14 @@ class ShapedConverter {
 					const text = variant.entries.map(entry => {
 						if (isString(entry)) return entry;
 						else if (entry.type === "table") return this.processTable(entry);
-						else return entry.items.map(item => `${item.name} ${item.entry}`).join('\n');
+						else if (entry.type === "list") return entry.items.map(item => `${item.name} ${item.entry}`).join('\n');
+						else {
+							const recursiveFlatten = (ent) => {
+								if (ent.entries) return `${ent.name ? `${ent.name}. ` : ""}${ent.entries.map(it => recursiveFlatten(it)).join("\n")}`;
+								else if (isString(ent)) return ent;
+								else return JSON.stringify(ent);
+							};
+						}
 					}).join('\n');
 					addVariant(baseName, text, output);
 				} else if (variant.entries.find(entry => entry.type === 'entries')) {
@@ -553,8 +554,9 @@ class ShapedConverter {
 			}).filter(l => !!l);
 		}
 
-		if (legendaryGroup[monster.legendaryGroup]) {
-			const lairs = legendaryGroup[monster.legendaryGroup].lairActions;
+		if (monster.legendaryGroup && (legendaryGroup[monster.legendaryGroup.source] || {})[monster.legendaryGroup.name]) {
+			const lg = legendaryGroup[monster.legendaryGroup.source][monster.legendaryGroup.name];
+			const lairs = lg.lairActions;
 			if (lairs) {
 				if (lairs.every(isString)) {
 					output.lairActions = lairs.map(this.fixLinks);
@@ -562,9 +564,9 @@ class ShapedConverter {
 					output.lairActions = lairs.filter(isObject)[0].items.map(this.itemRenderer);
 				}
 			}
-			if (legendaryGroup[monster.legendaryGroup].regionalEffects) {
-				output.regionalEffects = legendaryGroup[monster.legendaryGroup].regionalEffects.filter(isObject)[0].items.map(this.itemRenderer);
-				output.regionalEffectsFade = this.fixLinks(legendaryGroup[monster.legendaryGroup].regionalEffects.filter(isString).last());
+			if (lg.regionalEffects) {
+				output.regionalEffects = lg.regionalEffects.filter(isObject)[0].items.map(this.itemRenderer);
+				output.regionalEffectsFade = this.fixLinks(lg.regionalEffects.filter(isString).last());
 			}
 		}
 
@@ -664,13 +666,13 @@ class ShapedConverter {
 		};
 
 		const rows = [entry.colLabels];
-		rows.push.apply(rows, entry.rows);
+		rows.push(...entry.rows);
 
 		const formattedRows = rows.map(row => `| ${row.map(cellProc).join(' | ')} |`);
 		const styleToColDefinition = style => {
-			if (style.includes('text-align-center')) {
+			if (style.includes('text-center')) {
 				return ':----:';
-			} else if (style.includes('text-align-right')) {
+			} else if (style.includes('text-right')) {
 				return '----:';
 			}
 			return ':----';
@@ -838,8 +840,8 @@ class ShapedConverter {
 	}
 
 	static processHigherLevel (entriesHigherLevel, newSpell) {
-		if (entriesHigherLevel) {
-			newSpell.higherLevel = this.fixLinks(entriesHigherLevel[0].entries.join('\n'));
+		if (entriesHigherLevel && entriesHigherLevel.length) {
+			newSpell.higherLevel = this.fixLinks((entriesHigherLevel[0].entries || entriesHigherLevel).join('\n'));
 		}
 	}
 
@@ -847,7 +849,7 @@ class ShapedConverter {
 		const newSpell = {
 			name: spell.name,
 			level: spell.level,
-			school: Parser.spSchoolAbvToFull(spell.school)
+			school: Parser.spSchoolAndSubschoolsAbvsToFull(spell.school, spell.subschools)
 		};
 
 		if (spell.meta && spell.meta.ritual) {
@@ -902,9 +904,6 @@ class ShapedConverter {
 
 	static convertData (inputs) {
 		const spellLevels = {};
-		const srdMonsters = inputs._srdMonsters;
-		const srdSpells = inputs._srdSpells;
-		const srdSpellRenames = inputs._srdSpellRenames;
 		const additionalSpellData = inputs._additionalSpellData;
 		const legendaryGroup = inputs._legendaryGroup;
 
@@ -915,17 +914,17 @@ class ShapedConverter {
 		Object.values(inputs).forEach(data => {
 			if (data.monsterInput) monsterList = monsterList.concat(data.monsterInput);
 		});
-		monsterList.forEach(m => EntryRenderer.monster.mergeCopy(monsterList, m));
 
 		toProcess.forEach(data => {
 			if (data.monsterInput) {
+				// FIXME does this ever do anything?
 				if (data.monsterInput.legendaryGroup) {
 					data.monsterInput.legendaryGroup.forEach(monsterDetails => legendaryGroup[monsterDetails.name] = monsterDetails);
 				}
 				data.monsters = data.monsterInput.map(monster => {
 					try {
 						const converted = this.processMonster(monster, legendaryGroup);
-						if (srdMonsters.includes(monster.name)) {
+						if (monster.srd) {
 							const pruned = (({name, lairActions, regionalEffects, regionalEffectsFade}) => ({
 								name,
 								lairActions,
@@ -949,11 +948,10 @@ class ShapedConverter {
 			if (data.spellInput) {
 				data.spells = data.spellInput.map(spell => {
 					spellLevels[spell.name] = spell.level;
-					spell.classes.fromClassList.forEach(clazz => {
-						if ((srdSpells.includes(spell.name) || srdSpells.includes(srdSpellRenames[spell.name])) && clazz.source === SRC_PHB) {
-							return;
-						}
-						const nameToAdd = srdSpellRenames[spell.name] || spell.name;
+					((spell.classes || {}).fromClassList || []).forEach(clazz => {
+						if (spell.srd && clazz.source === SRC_PHB) return;
+
+						const nameToAdd = typeof spell.srd === "string" ? spell.srd : spell.name;
 						const sourceObject = clazz.source === SRC_PHB ? data : inputs[clazz.source];
 						if (!sourceObject) {
 							return;
@@ -966,7 +964,7 @@ class ShapedConverter {
 						sourceObject.classes[clazz.name].spells.push(nameToAdd);
 					});
 
-					(spell.classes.fromSubclass || []).forEach(subclass => {
+					((spell.classes || {}).fromSubclass || []).forEach(subclass => {
 						if ([
 							'Life',
 							'Devotion',
@@ -999,12 +997,12 @@ class ShapedConverter {
 						}
 						archetype.spells.push(spell.name);
 					});
-					if (srdSpells.includes(spell.name)) {
+					if (spell.srd === true) {
 						return null;
 					}
-					if (srdSpellRenames[spell.name]) {
+					if (spell.srd) {
 						return {
-							name: srdSpellRenames[spell.name],
+							name: spell.srd,
 							newName: spell.name
 						};
 					}
@@ -1058,15 +1056,6 @@ class ShapedConverter {
 		});
 	}
 
-	static flattener (result, item) {
-		if (Array.isArray(item)) {
-			result.push(...item);
-		} else {
-			result.push(item);
-		}
-		return result;
-	}
-
 	static objMap (obj, func) {
 		return Object.keys(obj).map((key) => {
 			return func(obj[key], key, obj);
@@ -1074,38 +1063,33 @@ class ShapedConverter {
 	}
 }
 
-function rebuildShapedSources () {
-	shapedConverter.getInputs().then((inputs) => {
-		return Object.values(inputs).sort((a, b) => {
-			if (a.name === 'Player\'s Handbook') {
-				return -1;
-			} else if (b.name === 'Player\'s Handbook') {
-				return 1;
-			}
+async function rebuildShapedSources () {
+	const inputs = await shapedConverter.pGetInputs();
+
+	const sortedInputLists = Object.entries(inputs)
+		.filter(([k]) => !k.startsWith("_"))
+		.sort(([ka, a], [kb, b]) => {
+			if (a.name === "Player's Handbook") return -1;
+			else if (b.name === "Player's Handbook") return 1;
 			return a.name.localeCompare(b.name);
-		});
-	}).then(inputs => {
-		const checkedSources = {};
-		checkedSources[SRC_PHB] = true;
+		})
+		.map(([k, v]) => v);
 
-		$('.shaped-source').each((i, e) => {
-			const $e = $(e);
-			if ($e.prop('checked')) {
-				checkedSources[$e.val()] = true;
-			}
-			$e.parent().parent().remove();
-		});
+	const checkedSources = {};
+	checkedSources[SRC_PHB] = true;
 
-		inputs.forEach(input => {
-			const disabled = input.key === SRC_PHB ? 'disabled="disabled" ' : '';
-			const checked = checkedSources[input.key] ? 'checked="checked" ' : '';
-			$('#sourceList').append($(`<li><label class="shaped-label"><input class="shaped-source" type="checkbox" ${disabled}${checked} value="${input.key}"><span>${input.name}</span></label></li>`));
-		});
-	}).catch(e => {
-		alert(`${e}\n${e.stack}`);
-		setTimeout(() => {
-			throw e;
-		}, 0);
+	$('.shaped-source').each((i, e) => {
+		const $e = $(e);
+		if ($e.prop('checked')) {
+			checkedSources[$e.val()] = true;
+		}
+		$e.parent().parent().remove();
+	});
+
+	sortedInputLists.forEach(input => {
+		const disabled = input.key === SRC_PHB ? 'disabled="disabled" ' : '';
+		const checked = checkedSources[input.key] ? 'checked="checked" ' : '';
+		$('#sourceList').append($(`<li><label class="shaped-label"><input class="shaped-source" type="checkbox" ${disabled}${checked} value="${input.key}"><span>${input.name}</span></label></li>`));
 	});
 }
 
@@ -1113,7 +1097,7 @@ window.onload = function load () {
 	ExcludeUtil.pInitialise(); // don't await, as this is only used for search
 
 	window.handleBrew = data => {
-		shapedConverter.getInputs()
+		shapedConverter.pGetInputs()
 			.then(inputs => {
 				shapedConverter.addBrewData(inputs, data);
 				rebuildShapedSources();
@@ -1127,7 +1111,7 @@ window.onload = function load () {
 	};
 
 	window.removeBrewSource = source => {
-		shapedConverter.getInputs().then(inputs => {
+		shapedConverter.pGetInputs().then(inputs => {
 			delete inputs[source];
 			rebuildShapedSources();
 		});
@@ -1144,7 +1128,7 @@ window.onload = function load () {
 		const keys = $('.shaped-source:checked').map((i, e) => {
 			return e.value;
 		}).get();
-		shapedConverter.generateShapedJS(keys)
+		shapedConverter.pGenerateShapedJS(keys)
 			.then(js => {
 				$('#shapedJS').val(js);
 				$('#copyJS').removeAttr('disabled');

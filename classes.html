@@ -2,7 +2,9 @@
 <html lang="en">
 
 <head>
-	<!--5ETOOLS_VERSION-->
+	<!--5ETOOLS_CMP-->
+	<!--5ETOOLS_ANALYTICS-->
+	<!--5ETOOLS_ADCODE-->
 	<meta charset="utf-8">
 	<meta name="description" content="">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,21 +12,178 @@
 
 	<title>Classes - 5etools</title>
 
+	<link rel="manifest" href="manifest.webmanifest">
+
 	<link rel="stylesheet" href="css/bootstrap.css">
 	<link rel="stylesheet" href="css/jquery-ui.css">
 	<link rel="stylesheet" href="css/jquery-ui-slider-pips.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="icon" href="favicon.png">
 
+	<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
+
 	<script type="text/javascript" src="js/styleswitch.js"></script>
 	<script type="text/javascript" src="js/navigation.js"></script>
+	<script type="text/javascript" src="js/browsercheck.js"></script>
+
 	<style>
+		/* region MOVED FROM MAIN STYLE */
+		#classtable {
+			overflow-x: auto;
+		}
+
+		#classtable table {
+			font-size: 0.8em;
+			width: 100%;
+		}
+
+		#classtable table .level {
+			text-align: center;
+			width: 1.5em;
+		}
+
+		#classtable table .pb {
+			text-align: center;
+			width: 1.5em;
+			padding: 1px 0.5em;
+		}
+
+		#classtable .slots {
+			display: none;
+			text-align: center;
+			max-width: 4em;
+		}
+
+		td.features {
+			max-width: 100%;
+			white-space: pre-wrap;
+		}
+
+		.list.classes {
+			max-height: 355px;
+		}
+
+		#classtable .centred-col {
+			text-align: center;
+			min-width: 3em;
+		}
+
+		div#subclasses {
+			padding: 0 1em 0.5em;
+			text-align: center;
+		}
+
+		div#subclasses > span.divider {
+			margin: 0;
+			padding: 0;
+			width: 1em;
+			display: inline-block;
+			cursor: default;
+			border-radius: 0;
+		}
+
+		#classtable .colGroupTitle {
+			text-align: center;
+		}
+
+		#classtable .colGroupTitle::after {
+			position: relative;
+			bottom: 0;
+			left: 0;
+			margin: 0 auto;
+			padding: 0;
+			display: block;
+			content: '';
+			height: 1px;
+			width: 96%;
+			border-bottom: 1px solid black;
+		}
+
+		#classtable tr th {
+			padding: 1px 4px;
+		}
+
+		#classtable table {
+			background: #fdf1dc;
+		}
+
+		#classtable table th {
+			color: black;
+		}
+
+		#classtable table tr:nth-child(odd) td {
+			background: lightgrey;
+		}
+
+		.cls-bkmv__btn-tab {
+			background: #f0f0f0;
+		}
+
+		.night-mode #classtable table {
+			background: #272727;
+		}
+
+		.night-mode #classtable table th {
+			color: #bbb;
+		}
+
+		.night-mode #classtable .colGroupTitle::after {
+			border-color: #888;
+		}
+
+		.night-mode #classtable table tr:nth-child(odd) td {
+			background: rgba(0, 0, 0, 0.31);
+		}
+		/* endregion */
+
 		/* hide these until the user clicks a class */
 		#classtable,
 		#button-wrapper,
 		#statsprof,
 		#sticky-nav {
 			display: none;
+		}
+
+		.cls__squash_header {
+			overflow: hidden;
+			max-height: 32px;
+			display: block;
+		}
+
+		.cls__btn-toggle-sidebar {
+			cursor: pointer;
+			font-size: initial;
+			color: black;
+		}
+
+		.cls-comp__wrp-features {
+			width: 400px;
+		}
+
+		.cls-bkmv__wrp-tabs {
+			background-color: #eee;
+			border-bottom: 1px solid #ccc;
+		}
+
+		.night-mode .cls-bkmv__wrp-tabs {
+			background-color: #222;
+		}
+
+		.cls-bkmv__btn-tab {
+			font-size: 0.8em;
+			padding: 2px 6px;
+			margin-top: 2px;
+			cursor: pointer;
+			user-select: none;
+			border-right: 1px solid #ccc;
+			border-left: 1px solid #ccc;
+			border-top: 1px solid #ccc;
+			border-top-right-radius: 4px;
+			border-top-left-radius: 4px;
+		}
+
+		.night-mode .cls__btn-toggle-sidebar {
+			color: #bbb;
 		}
 
 		table#stats > tbody > tr > td {
@@ -67,18 +226,6 @@
 			overflow-y: auto;
 		}
 
-		span.pnl-link {
-			font-size: 0.8em;
-			padding: 3px;
-			margin-bottom: 1px;
-			cursor: pointer;
-			user-select: none;
-		}
-
-		span.pnl-link-close {
-			margin-top: auto;
-		}
-
 		.wrp-btn-readmode {
 			margin-top: 1px;
 			margin-bottom: 5px;
@@ -92,13 +239,14 @@
 			margin-top: 15px;
 			max-height: calc(100vh - 30px);
 			padding-right: 9px;
+			padding-left: 9px;
 			font-family: 'Andada', serif;
 			font-variant: small-caps;
 			font-weight: 500;
 		}
 
 		#sticky-nav:hover {
-			overflow-y: auto;
+			overflow-y: scroll;
 			padding-right: 0;
 		}
 
@@ -110,8 +258,8 @@
 			color: #bbbbbb40;
 		}
 
-		#sticky-nav .nav-head[data-state="1"] .nav-outline:hover::after {
-			content: " (Hide)";
+		.nav-head[data-state="0"] .pg-cls__btn-toggle-outline::after {
+			content: " [+]";
 			font-weight: initial;
 		}
 
@@ -119,8 +267,8 @@
 			color: inherit;
 		}
 
-		#sticky-nav .nav-head[data-state="0"] .nav-outline:hover::after {
-			content: " (Show)";
+		.nav-head[data-state="1"] .pg-cls__btn-toggle-outline::after {
+			content: "[\2013]";
 			font-weight: initial;
 		}
 
@@ -151,6 +299,11 @@
 			color: #1d965d;
 		}
 
+
+		#sticky-nav div.nav-item.grellow {
+			color: #827e00;
+		}
+
 		#sticky-nav div.nav-item.purple {
 			color: #8c3b96;
 		}
@@ -167,8 +320,12 @@
 			color: #27ce80;
 		}
 
+		.night-mode #sticky-nav div.nav-item.grellow {
+			color: #a2ce42;
+		}
+
 		.night-mode #sticky-nav div.nav-item.purple {
-			color: #8c3b96;
+			color: #aa40b4;
 		}
 
 		#sticky-nav div.nav-item:hover {
@@ -211,6 +368,46 @@
 			line-height: 12px;
 		}
 
+		th#nameTable,
+		th#nameSummary {
+			font-size: 1.8em;
+			font-family: 'Andada', serif;
+			font-variant: small-caps;
+			font-weight: 500;
+			padding-left: 0.2em !important;
+		}
+
+		th#author {
+			color: inherit;
+			display: none;
+			font-style: italic;
+			font-size: 0.9em;
+		}
+
+		td#hp,
+		td#prof,
+		td#equipment,
+		td#multiclassing {
+			font-size: 0.8em;
+			padding: 0.4em 0.7em;
+		}
+
+		td#hp h5,
+		td#prof h5,
+		td#equipment h5,
+		td#multiclassing h5 {
+			font-family: serif;
+			font-weight: 500;
+			font-size: 1.5em;
+			margin-bottom: 0;
+			margin-top: 4px;
+		}
+
+		td#equipment ul,
+		td#multiclassing ul {
+			padding: 0 0 0 1.7em;
+		}
+
 		@media (max-width: 991px) {
 			.wrp-btn-readmode {
 				margin-top: 0;
@@ -242,45 +439,47 @@
 			.book-mode div.pnl-menu-pad {
 				display: none;
 			}
-
-			span.pnl-link-close {
-				margin-top: 0;
-			}
 		}
 	</style>
 </head>
 
 <body>
-<header class="hidden-xs hidden-sm">
+<header class="hidden-xs hidden-sm page__header">
 	<div class="container">
 
-		<h1>Class List</h1>
-		<p>Search by name on the left, click class name to display on the right.</p>
+		<h1 class="page__title">Classes</h1>
+		<p class="page__subtitle">Search by name on the left, click class name to display on the right.</p>
 	</div>
 </header>
-<nav class="container" id="navigation">
-	<ul class="nav nav-pills" id="navbar">
+<nav class="container page__nav" id="navigation">
+	<ul class="nav page__nav-inner" id="navbar">
 	</ul>
 </nav>
-<main class="container bodyContent classes">
+
+<div class="cancer__wrp-leaderboard"><!--5ETOOLS_AD_LEADERBOARD--></div>
+<div class="cancer__wrp-sidebar-rhs"><!--5ETOOLS_AD_RIGHT_1--><div class="cancer__sidebar-rhs-inner"><!--5ETOOLS_AD_RIGHT_2--></div></div>
+
+<main class="container classes">
 
 	<div class="row">
 		<div class="col-sm-3" id="listcontainer">
-			<div class="input-group" id="filter-search-input-group">
-				<input type="search" id="search" class="search form-control" placeholder="Find class...">
-				<span class="input-group-btn">
-						<button class="btn btn-default" id="reset">Reset</button>
-					</span>
+			<div class="lst__form-top" id="filter-search-input-group">
+				<div class="w-100 relative">
+					<input type="search" id="search" autocomplete="off" autocapitalize="off" spellcheck="false" class="search form-control lst__search lst__search--no-border-h">
+					<div class="lst__wrp-search-glass no-events flex-vh-center"><span class="glyphicon glyphicon-search"></span></div>
+					<div class="lst__wrp-search-visible no-events flex-vh-center"></div>
+				</div>
+				<button class="btn btn-default" id="reset"><span class="glyphicon glyphicon-refresh"></span></button>
 			</div>
-			<div id="filtertools" class="sortlabel btn-group">
+			<div id="filtertools" class="sortlabel lst__form-bottom">
 				<button class="col-8 sort btn btn-default btn-xs" data-sort="name">Name <span class="caret_wrp"></span></button>
-				<button class="col-4 sort btn btn-default btn-xs" data-sort="source">Source <span class="caret_wrp"></span></button>
+				<button class="sort btn btn-default btn-xs" data-sort="source">Source <span class="caret_wrp"></span></button>
 			</div>
 
-			<ul class="list classes">
+			<ul class="list list--stats classes">
 
 			</ul>
-			<p class="text-align-center">
+			<p class="text-center">
 				<button class="btn btn-default btn-xs btn-file btn-info" id="manage-brew">Manage Homebrew</button>
 			</p>
 		</div>
@@ -298,7 +497,7 @@
 				<tr id="colHeaders">
 					<th class="level">Level</th>
 					<th class="pb">Proficiency Bonus</th>
-					<th class="features">Features</th>
+					<th class="features w-100">Features</th>
 				</tr>
 				<tr id="level1">
 					<td class="level">1st</td>
@@ -409,17 +608,17 @@
 	<hr>
 	<div class="row" id="desktop-flex">
 		<div class="col-md-3">
-			<div id="button-wrapper" class="text-align-center wrp-btn-readmode">
-				<button class="btn btn-default btn-xs noprint" id="btn-comparemode" title="A pop-up table which can be used to compare subclass features.">Subclass Comparison</button>
-				<button class="btn btn-default btn-xs noprint" id="btn-readmode" title="A pop-up reading mode thatkeeps class and subclass information separated, matching the books.">Book View</button>
+			<div id="button-wrapper" class="text-center wrp-btn-readmode">
+				<button class="btn btn-default btn-xs no-print" id="btn-comparemode" title="A pop-up table which can be used to compare subclass features.">Subclass Comparison</button>
+				<button class="btn btn-default btn-xs no-print" id="btn-readmode" title="A pop-up reading mode thatkeeps class and subclass information separated, matching the books.">Book View</button>
 			</div>
 
 			<table id="statsprof" class="stats shadow-big">
 				<tr><th class="border" colspan="6"></th></tr>
 				<tr><th id="nameSummary" colspan="6">Name</th></tr>
 				<tr><th id="author" colspan="6">Author</th></tr>
-				<tr id="statsprof_divider"><td class="divider" colspan="6"><div></div></td></tr>
-				<tr>
+				<tr class="cls__sidebar-visible" id="statsprof_divider"><td class="divider" colspan="6"><div style="margin: 0;"></div></td></tr>
+				<tr class="cls__sidebar-visible">
 					<td id="hp" colspan="6">
 						<h5>Hit Points</h5>
 						<div id="hitdice">
@@ -433,7 +632,7 @@
 						</div>
 					</td>
 				</tr>
-				<tr>
+				<tr class="cls__sidebar-visible">
 					<td id="prof" colspan="6">
 						<h5>Proficiencies</h5>
 						<div id="armor">
@@ -453,13 +652,13 @@
 						</div>
 					</td>
 				</tr>
-				<tr>
+				<tr class="cls__sidebar-visible">
 					<td id="equipment" colspan="6">
 						<h5>Starting Equipment</h5>
 						<div></div>
 					</td>
 				</tr>
-				<tr>
+				<tr class="cls__sidebar-visible">
 					<td id="multiclassing" colspan="6">
 						<h5>Multiclassing</h5>
 						<div id="multiclassing_prereqs"></div>
@@ -482,7 +681,7 @@
 			</table>
 
 			<div id="sticky-nav">
-				<div class="nav-head" data-state="1"><div class="nav-outline">Outline</div><hr></div>
+				<div class="nav-head" data-state="1"><div class="nav-outline split"><div>Outline</div><div class="pg-cls__btn-toggle-outline"></div></div><hr></div>
 				<div class="nav-body"><!-- populate with JS --></div>
 			</div>
 		</div>
@@ -502,22 +701,22 @@
 		</div>
 	</div>
 </main>
-<footer class="container">
-
-</footer>    <!--5ETOOLS_SCRIPT_ANCHOR-->
+<!--5ETOOLS_SCRIPT_ANCHOR-->
+<!--5ETOOLS_AD_ADHESION-->
 <script type="text/javascript" src="lib/jquery.js"></script>
 <script type="text/javascript" src="lib/jquery-ui.js"></script>
 <script type="text/javascript" src="lib/jquery-ui-slider-pip.js"></script>
-<script type="text/javascript" src="lib/list.js"></script>
+<script type="text/javascript" src="js/list2.js"></script>
 <script type="text/javascript" src="lib/elasticlunr.js"></script>
 <script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/utils-ui.js"></script>
 <script type="text/javascript" src="lib/localforage.js"></script>
 <script type="text/javascript" src="js/omnidexer.js"></script>
 <script type="text/javascript" src="js/omnisearch.js"></script>
 <script type="text/javascript" src="js/filter.js"></script>
-<script type="text/javascript" src="js/entryrender.js"></script>
+<script type="text/javascript" src="js/render.js"></script>
 <script type="text/javascript" src="js/scalecreature.js"></script>
-<script type="text/javascript" src="js/history.js"></script>
+<script type="text/javascript" src="js/hist.js"></script>
 <script type="text/javascript" src="js/classes.js"></script>
 </body>
 

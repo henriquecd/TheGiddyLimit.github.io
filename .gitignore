@@ -4,3 +4,7 @@ node_modules
 # IntelliJ project files
 .idea/
 *.iml
+
+# Generated files
+sitemap.xml
+js/sw-files.js

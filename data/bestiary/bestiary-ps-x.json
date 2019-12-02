@@ -1,4 +1,11 @@
 {
+	"_meta": {
+		"dependencies": {
+			"monster": [
+				"MM"
+			]
+		}
+	},
 	"monster": [
 		{
 			"source": "PSX",
@@ -7,7 +14,7 @@
 			"size": "M",
 			"type": "monstrosity",
 			"alignment": [
-				"L",
+				"N",
 				"E"
 			],
 			"ac": [
@@ -45,7 +52,9 @@
 					"note": "from nonmagical weapons"
 				}
 			],
-			"senses": "darkvision 120 ft.",
+			"senses": [
+				"darkvision 120 ft."
+			],
 			"passive": 13,
 			"cr": "3",
 			"trait": [
@@ -60,13 +69,13 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 4} to hit, reach 5 ft., one target. {@h}7 ({@damage 2d4 + 2}) piercing damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked {@condition prone}."
+						"{@atk mw} {@hit 4} to hit, reach 5 ft., one target. {@h}7 ({@damage 2d4 + 2}) piercing damage. If the target is a creature, it must succeed on a {@dc 13} Strength saving throw or be knocked {@condition prone}."
 					]
 				},
 				{
 					"name": "Drain Blood",
 					"entries": [
-						"{@atk mw} {@hit 4} to hit, reach 5 ft., one creature that is {@condition prone}, {@condition incapacitated}, or {@condition restrained}. {@h}5 ({@damage 1d6 + 2}) necrotic damage. The target must succeed on a DC 13 Constitution saving throw or its hit point maximum is reduced by an amount equal to the damage taken, and the chupacabra regains hit points equal to that amount. The reduction lasts until the target finishes a long rest. The target dies if this effect reduces its hit point maximum to 0."
+						"{@atk mw} {@hit 4} to hit, reach 5 ft., one creature that is {@condition prone}, {@condition incapacitated}, or {@condition restrained}. {@h}5 ({@damage 1d6 + 2}) necrotic damage. The target must succeed on a {@dc 13} Constitution saving throw or its hit point maximum is reduced by an amount equal to the damage taken, and the chupacabra regains hit points equal to that amount. The reduction lasts until the target finishes a long rest. The target dies if this effect reduces its hit point maximum to 0."
 					]
 				}
 			],
@@ -83,6 +92,13 @@
 			],
 			"senseTags": [
 				"SD"
+			],
+			"damageTags": [
+				"P",
+				"N"
+			],
+			"miscTags": [
+				"MW"
 			]
 		},
 		{
@@ -143,7 +159,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -176,13 +194,13 @@
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -217,6 +235,9 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"A"
 			]
 		},
 		{
@@ -277,7 +298,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -302,7 +325,7 @@
 				{
 					"name": "Lightning Storm",
 					"entries": [
-						"The elder dinosaur is always accompanied by a raging thunderstorm similar to the effect of a {@spell call lightning} spell. A storm cloud in the shape of a cylinder that is 10 feet tall with a 60-foot radius instantly forms 100 feet in the air over the elder dinosaur when it is angered or becomes violent, as long as it is outdoors. On each of its turns, as an action, the elder dinosaur can choose a point it can see within 120 feet of it. A bolt of lightning flashes down from the cloud to that point. Each creature within 10 feet of that point must make a DC 20 Dexterity saving throw, taking 21 ({@damage 6d6}) lightning damage on a failed save, or half as much damage on a successful one."
+						"The elder dinosaur is always accompanied by a raging thunderstorm similar to the effect of a {@spell call lightning} spell. A storm cloud in the shape of a cylinder that is 10 feet tall with a 60-foot radius instantly forms 100 feet in the air over the elder dinosaur when it is angered or becomes violent, as long as it is outdoors. On each of its turns, as an action, the elder dinosaur can choose a point it can see within 120 feet of it. A bolt of lightning flashes down from the cloud to that point. Each creature within 10 feet of that point must make a {@dc 20} Dexterity saving throw, taking 21 ({@damage 6d6}) lightning damage on a failed save, or half as much damage on a successful one."
 					]
 				}
 			],
@@ -316,7 +339,7 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape DC 20). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
+						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape {@dc 20}). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
 					]
 				},
 				{
@@ -328,13 +351,13 @@
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -370,6 +393,17 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"P",
+				"S",
+				"A",
+				"L"
+			],
+			"miscTags": [
+				"MW",
+				"RCH",
+				"AOE"
 			]
 		},
 		{
@@ -430,7 +464,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -463,7 +499,7 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}62 ({@damage 8d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape DC 20). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
+						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}62 ({@damage 8d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape {@dc 20}). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
 					]
 				},
 				{
@@ -475,19 +511,19 @@
 				{
 					"name": "Tail",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 20 ft., one target. {@h}38 ({@damage 8d6 + 10}) bludgeoning damage. If the target is a creature, it must succeed on a DC 20 Strength saving throw or be knocked {@condition prone}."
+						"{@atk mw} {@hit 19} to hit, reach 20 ft., one target. {@h}38 ({@damage 8d6 + 10}) bludgeoning damage. If the target is a creature, it must succeed on a {@dc 20} Strength saving throw or be knocked {@condition prone}."
 					]
 				},
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -523,6 +559,15 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"P",
+				"B",
+				"A"
+			],
+			"miscTags": [
+				"MW",
+				"RCH"
 			]
 		},
 		{
@@ -584,7 +629,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -623,7 +670,7 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape DC 20). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
+						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape {@dc 20}). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
 					]
 				},
 				{
@@ -635,13 +682,13 @@
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -678,6 +725,15 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"P",
+				"B",
+				"A"
+			],
+			"miscTags": [
+				"MW",
+				"RCH"
 			]
 		},
 		{
@@ -738,7 +794,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -783,7 +841,7 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape DC 20). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
+						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape {@dc 20}). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
 					]
 				},
 				{
@@ -801,7 +859,7 @@
 				{
 					"name": "Tail",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 20 ft., one target. {@h}24 ({@damage 4d6 + 10}) piercing damage. If the target is a creature, it must succeed on a DC 20 Strength saving throw or be knocked {@condition prone}."
+						"{@atk mw} {@hit 19} to hit, reach 20 ft., one target. {@h}24 ({@damage 4d6 + 10}) piercing damage. If the target is a creature, it must succeed on a {@dc 20} Strength saving throw or be knocked {@condition prone}."
 					]
 				},
 				{
@@ -813,13 +871,13 @@
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -855,6 +913,16 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"P",
+				"S",
+				"A"
+			],
+			"miscTags": [
+				"MW",
+				"RCH",
+				"RW"
 			]
 		},
 		{
@@ -915,7 +983,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -948,7 +1018,7 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape DC 20). Until this grapple ends, the target is {@condition restrained}. If the elder dinosaur has three targets {@condition restrained} in this way, it can't bite another target."
+						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape {@dc 20}). Until this grapple ends, the target is {@condition restrained}. If the elder dinosaur has three targets {@condition restrained} in this way, it can't bite another target."
 					]
 				},
 				{
@@ -960,19 +1030,19 @@
 				{
 					"name": "Tail",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 20 ft., one target. {@h}38 ({@damage 8d6 + 10}) bludgeoning damage. If the target is a creature, it must succeed on a DC 20 Strength saving throw or be knocked {@condition prone}."
+						"{@atk mw} {@hit 19} to hit, reach 20 ft., one target. {@h}38 ({@damage 8d6 + 10}) bludgeoning damage. If the target is a creature, it must succeed on a {@dc 20} Strength saving throw or be knocked {@condition prone}."
 					]
 				},
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -1008,6 +1078,15 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"P",
+				"B",
+				"A"
+			],
+			"miscTags": [
+				"MW",
+				"RCH"
 			]
 		},
 		{
@@ -1072,7 +1151,9 @@
 				"paralyzed",
 				"poisoned"
 			],
-			"senses": "blindsight 120 ft.",
+			"senses": [
+				"blindsight 120 ft."
+			],
 			"passive": 10,
 			"cr": "30",
 			"trait": [
@@ -1105,7 +1186,7 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape DC 20). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
+						"{@atk mw} {@hit 19} to hit, reach 10 ft., one target. {@h}36 ({@damage 4d12 + 10}) piercing damage. If the target is a creature, it is {@condition grappled} (escape {@dc 20}). Until this grapple ends, the target is {@condition restrained}, and the elder dinosaur can't bite another target."
 					]
 				},
 				{
@@ -1129,13 +1210,13 @@
 				{
 					"name": "Frightful Presence",
 					"entries": [
-						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a DC 17 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
+						"Each creature of the elder dinosaur's choice within 120 feet of it and aware of it must succeed on a {@dc 17} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, with disadvantage if the elder dinosaur is within line of sight, ending the effect on itself ona success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the elder dinosaur's Frightful Presence for the next 24 hours."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
-						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a DC 20 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"The elder dinosaur makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage, the target is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside the elder dinosaur, and it takes 56 ({@damage 16d6}) acid damage at the start of each of the elder dinosaur's turns. If the elder dinosaur takes 60 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 20} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If the elder dinosaur dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				}
 			],
@@ -1171,6 +1252,16 @@
 			],
 			"senseTags": [
 				"B"
+			],
+			"damageTags": [
+				"P",
+				"S",
+				"B",
+				"A"
+			],
+			"miscTags": [
+				"MW",
+				"RCH"
 			]
 		},
 		{
@@ -1197,7 +1288,7 @@
 			"speed": {
 				"walk": 40
 			},
-			"str": 20,
+			"str": 12,
 			"dex": 16,
 			"con": 13,
 			"int": 4,
@@ -1218,24 +1309,33 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 4} to hit, reach 5 ft., one target. {@h}6 ({@damage 1d6 + 3}) piercing damage."
+						"{@atk mw} {@hit 5} to hit, reach 5 ft., one target. {@h}6 ({@damage 1d6 + 3}) piercing damage."
 					]
 				},
 				{
 					"name": "Claw",
 					"entries": [
-						"{@atk mw} {@hit 4} to hit, reach 5 ft., one target. {@h}6 ({@damage 1d6 + 3}) slashing damage."
+						"{@atk mw} {@hit 5} to hit, reach 5 ft., one target. {@h}6 ({@damage 1d6 + 3}) slashing damage."
 					]
 				},
 				{
 					"name": "Spit Poison",
 					"entries": [
-						"{@atk rw} {@hit 4} to hit, range 15/30 ft., one creature. {@h}The target must make a DC 13 Constitution saving throw, taking 18 ({@damage 4d8}) poison damage on a failed save, or half as much damage on a successful one. In addition, a creature that fails its saving throw is {@condition blinded} until the end of the deathspitter's next turn."
+						"{@atk rw} {@hit 5} to hit, range 15/30 ft., one creature. {@h}The target must make a {@dc 13} Constitution saving throw, taking 18 ({@damage 4d8}) poison damage on a failed save, or half as much damage on a successful one. In addition, a creature that fails its saving throw is {@condition blinded} until the end of the deathspitter's next turn."
 					]
 				}
 			],
 			"actionTags": [
 				"Multiattack"
+			],
+			"damageTags": [
+				"P",
+				"S",
+				"I"
+			],
+			"miscTags": [
+				"MW",
+				"RW"
 			]
 		},
 		{
@@ -1297,20 +1397,20 @@
 				{
 					"name": "Bite",
 					"entries": [
-						"{@atk mw} {@hit 11} to hit, reach 15 ft., one target. {@h}39 ({@damage 5d12 + 7}) piercing damage. If the target is a Large or smaller creature, it must succeed on a DC 19 Dexterity saving throw or it is {@condition grappled} (escape DC 19). Until this grapple ends, the target is {@condition restrained}, and Gishath can't bite another target."
+						"{@atk mw} {@hit 11} to hit, reach 15 ft., one target. {@h}39 ({@damage 5d12 + 7}) piercing damage. If the target is a Large or smaller creature, it must succeed on a {@dc 19} Dexterity saving throw or it is {@condition grappled} (escape {@dc 19}). Until this grapple ends, the target is {@condition restrained}, and Gishath can't bite another target."
 					]
 				},
 				{
 					"name": "Swallow",
 					"entries": [
 						"Gishath makes one bite attack against a Large or smaller creature it is grappling. If the attack hits, that creature takes the bite's damage and is swallowed, and the grapple ends. While swallowed, the creature is {@condition blinded} and {@condition restrained}, it has total cover against attacks and other effects outside Gishath, and it takes 21 ({@damage 6d6}) acid damage at the start of each of Gishath's turns.",
-						"If Gishath takes 30 damage or more on a single turn from a creature inside it, it must succeed on a DC 18 Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If Gishath dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
+						"If Gishath takes 30 damage or more on a single turn from a creature inside it, it must succeed on a {@dc 18} Constitution saving throw at the end of that turn or regurgitate all swallowed creatures, which fall {@condition prone} in a space within 10 feet of it. If Gishath dies, a swallowed creature is no longer {@condition restrained} by it and can escape from the corpse by using 20 feet of movement, exiting {@condition prone}."
 					]
 				},
 				{
 					"name": "Stomp",
 					"entries": [
-						"{@atk mw} {@hit 11} to hit, reach 10 ft., one target. {@h}29 ({@damage 5d8 + 7}) bludgeoning damage, and the target must succeed on a DC 19 Strength saving throw or be knocked {@condition prone}."
+						"{@atk mw} {@hit 11} to hit, reach 10 ft., one target. {@h}29 ({@damage 5d8 + 7}) bludgeoning damage, and the target must succeed on a {@dc 19} Strength saving throw or be knocked {@condition prone}."
 					]
 				},
 				{
@@ -1330,7 +1430,7 @@
 				{
 					"name": "Roar (Costs 2 Actions)",
 					"entries": [
-						"Each creature that is within 120 feet of Gishath and can hear it must succeed on a DC 19 Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on tself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to Gishath's Roar for the next 24 hours."
+						"Each creature that is within 120 feet of Gishath and can hear it must succeed on a {@dc 19} Wisdom saving throw or become {@condition frightened} for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on tself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to Gishath's Roar for the next 24 hours."
 					]
 				}
 			],
@@ -1341,6 +1441,15 @@
 			"actionTags": [
 				"Multiattack",
 				"Swallow"
+			],
+			"damageTags": [
+				"P",
+				"A",
+				"B"
+			],
+			"miscTags": [
+				"MW",
+				"RCH"
 			]
 		},
 		{
@@ -1396,15 +1505,20 @@
 			"immune": [
 				"fire"
 			],
-			"senses": "darkvision 120 ft.",
-			"languages": "Giant Owl, understands Common but can't speak it",
+			"senses": [
+				"darkvision 120 ft."
+			],
+			"languages": [
+				"Giant Owl",
+				"understands Common but can't speak it"
+			],
 			"passive": 17,
 			"cr": "13",
 			"trait": [
 				{
 					"name": "Death Throes",
 					"entries": [
-						"When the sunbird dies, it explodes, and each creature within 30 feet of it must make a DC 18 Dexterity saving throw, taking 42 ({@damage 12d6}) fire damage on a failed save, or half as much damage on a successful one. The explosion ignites flammable objects in that area that aren't being worn or carried. The sunbird's body turns to ash, but an egg is left where the sunbird was."
+						"When the sunbird dies, it explodes, and each creature within 30 feet of it must make a {@dc 18} Dexterity saving throw, taking 42 ({@damage 12d6}) fire damage on a failed save, or half as much damage on a successful one. The explosion ignites flammable objects in that area that aren't being worn or carried. The sunbird's body turns to ash, but an egg is left where the sunbird was."
 					]
 				},
 				{
@@ -1436,7 +1550,7 @@
 				{
 					"name": "Talon",
 					"entries": [
-						"{@atk mw} {@hit 14} to hit, reach 5 ft., one target. {@h}16 ({@damage 2d6 + 9}) slashing damage plus 14 ({@damage 4d6}) fire damage, and the target is {@condition grappled} (escape DC 18). Until this grapple ends, the target is {@condition restrained}, and the sunbird can't attack another target with that talon. A {@condition grappled} creature takes 11 ({@damage 2d10}) fire damage at the start of each of the sunbird's turns."
+						"{@atk mw} {@hit 14} to hit, reach 5 ft., one target. {@h}16 ({@damage 2d6 + 9}) slashing damage plus 14 ({@damage 4d6}) fire damage, and the target is {@condition grappled} (escape {@dc 18}). Until this grapple ends, the target is {@condition restrained}, and the sunbird can't attack another target with that talon. A {@condition grappled} creature takes 11 ({@damage 2d10}) fire damage at the start of each of the sunbird's turns."
 					]
 				}
 			],
@@ -1456,7 +1570,48 @@
 			],
 			"senseTags": [
 				"SD"
+			],
+			"damageTags": [
+				"S",
+				"F"
+			],
+			"miscTags": [
+				"MW",
+				"AOE"
 			]
+		},
+		{
+			"name": "Harpy",
+			"source": "PSX",
+			"page": 36,
+			"_copy": {
+				"name": "Harpy",
+				"source": "MM",
+				"_mod": {
+					"action": [
+						{
+							"mode": "replaceArr",
+							"replace": "Multiattack",
+							"items": {
+								"name": "Multiattack",
+								"entries": [
+									"The harpy makes two attacks: one with its claws and one with its bite."
+								]
+							}
+						},
+						{
+							"mode": "replaceArr",
+							"replace": "Club",
+							"items": {
+								"name": "Bite",
+								"entries": [
+									"{@atk mw} {@hit 3} to hit, reach 5 ft., one target. {@h}3 ({@damage 1d4 + 1}) slashing damage. If the target is a creature, it must succeed on a DC 11 Constitution saving throw or contract a disease. Until the disease is cured, the target can't regain hit points except by magical means, and the target's hit point maximum decreases by 3 ({@dice 1d6}) every 24 hours. If the target's hit point maximum drops to 0 as a result of this disease, the target dies."
+								]
+							}
+						}
+					]
+				}
+			}
 		}
 	]
 }

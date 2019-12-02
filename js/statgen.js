@@ -1,4 +1,5 @@
 "use strict";
+
 const RACE_JSON_URL = "data/races.json";
 
 class StatGen {
@@ -11,13 +12,14 @@ class StatGen {
 	}
 
 	async init () {
+		this.raceStats = null;
 		this.raceChoiceAmount = null;
 		this.raceChoiceCount = null;
 		this.raceData = null;
 		this.$advanced = $(`#advanced`);
 		this.$budget = $(`#budget`);
 		this.budget = StatGen.DEFAULT_POINTS;
-		this.doSaveDebounced = MiscUtil.debounce(this.doSaveState, 200, true);
+		this.doSaveDebounced = MiscUtil.debounce(this.doSaveState, 200, {leading: true});
 
 		await ExcludeUtil.pInitialise();
 		await this.pLoadRaceJson();
@@ -58,20 +60,24 @@ class StatGen {
 			.click(() => DataUtil.userDownload(`statgen-pointbuy`, this.getSaveableState()));
 
 		$(`#pbuy__load_file`)
-			.click(() => {
-				DataUtil.userUpload((json) => {
-					if (StatGen.isValidState(json)) {
-						this.doLoadStateFrom(json);
-						this.doSaveDebounced();
-						this.handleCostChanges();
-					} else return alert("Invalid save!");
-				});
+			.click(async () => {
+				const json = await DataUtil.pUserUpload();
+				if (StatGen.isValidState(json)) {
+					this.doLoadStateFrom(json);
+					this.doSaveDebounced();
+					this.handleCostChanges();
+				} else {
+					return JqueryUtil.doToast({
+						content: `Invalid save file!`,
+						type: "danger"
+					});
+				}
 			});
 
 		const $btnSaveUrl = $(`#pbuy__save_url`)
-			.click(() => {
+			.click(async () => {
 				const encoded = `${window.location.href.split("#")[0]}#pointbuy${HASH_PART_SEP}${encodeURIComponent(JSON.stringify(this.getSaveableState()))}`;
-				copyText(encoded);
+				await MiscUtil.pCopyTextToClipboard(encoded);
 				JqueryUtil.showCopiedEffect($btnSaveUrl);
 			});
 
@@ -144,14 +150,9 @@ class StatGen {
 	async pLoadRaceJson () {
 		const data = await DataUtil.loadJSON(RACE_JSON_URL);
 
-		let brew;
-		try {
-			brew = await BrewUtil.pAddBrewData();
-		} catch (e) {
-			return BrewUtil.pPurgeBrew();
-		}
+		const brew = await BrewUtil.pAddBrewData();
 
-		this.raceData = EntryRenderer.race.mergeSubraces(data.race);
+		this.raceData = Renderer.race.mergeSubraces(data.race);
 		if (brew.race) this.raceData = this.raceData.concat(brew.race);
 		this.raceData = this.raceData.filter(it => !ExcludeUtil.isExcluded(it.name, "race", it.source));
 
@@ -161,11 +162,33 @@ class StatGen {
 		const titleStr = isCrypto ? "Numbers will be generated using Crypto.getRandomValues()" : "Numbers will be generated using Math.random()";
 		$(`#roller-mode`).html(`Cryptographically strong random generation: <span title="${titleStr}" class="crypto-${isCrypto}">${isCrypto ? `<span class="glyphicon glyphicon-lock"></span> enabled` : `<span class="glyphicon glyphicon-ban-circle"></span> not available`}</span>`);
 
-		$("#reset").click(() => {
+		const doReset = () => {
 			$(".base").val(this.statMin);
 			$(".pbuy__user_add").val(0);
 			$(".choose").prop("checked", false);
 			this.changeBase();
+		};
+
+		$("#reset").click(() => doReset());
+
+		$("#randomise").click(() => {
+			doReset();
+
+			let tries = 999;
+			const $iptAttrs = [...$(".base")].map(ele => $(ele));
+			while (tries > 0) {
+				tries--;
+
+				const $toBump = RollerUtil.rollOnArray($iptAttrs);
+				const oldVal = Number($toBump.val());
+				$toBump.val(oldVal + 1);
+				this.changeBase();
+
+				const constBudget = this.getCostAndBudget();
+				const remain = constBudget.budget - constBudget.cost;
+				if (remain === 0) return;
+				else if (remain < 0) $toBump.val(oldVal);
+			}
 		});
 
 		$(".base").on("input", () => this.changeBase());
@@ -186,7 +209,12 @@ class StatGen {
 		const $table = $(`#costs`);
 		$table.empty().append(`
 			<thead>
-				<tr><th>Score</th><th>Modifier</th><th>Point Cost</th><th class="pbuy__adv--visible"></th></tr>
+				<tr>
+					<th class="col-4 pbuy__adv-col-3">Score</th>
+					<th class="col-4 pbuy__adv-col-3">Modifier</th>
+					<th class="col-4 pbuy__adv-col-3">Point Cost</th>
+					<th class="col-3 pbuy__adv--visible"></th>
+				</tr>
 			</thead>
 		`);
 		const $tbody = $(`<tbody/>`).appendTo($table);
@@ -222,7 +250,8 @@ class StatGen {
 
 						this.renderCostsTable();
 						this.handleCostChanges();
-					}).appendTo($row.find(`td`).last());
+					});
+					$(`<div class="pbuy__wrp-btn-rem">`).append($btnRm).appendTo($row.find(`td`).last());
 				}
 			}
 		};
@@ -232,10 +261,15 @@ class StatGen {
 
 			const $wrpBtnsTop = $(`<div class="pbuy__add_row_btn_wrap"/>`).insertBefore($table);
 
-			const $btnAddLow = $(`<button class="btn btn-xs btn-primary" style="margin-right: 7px;">Add Lower</button>`)
+			const $btnAddLow = $(`<button class="btn btn-xs btn-primary" style="margin-right: 7px;">Add Lower Score</button>`)
 				.click(() => {
 					const lowest = Object.keys(this.savedState).map(Number).sort(SortUtil.ascSort)[0];
-					if (lowest === 0) return alert("Can't go any lower!");
+					if (lowest === 0) {
+						return JqueryUtil.doToast({
+							content: "Can't go any lower!",
+							type: "danger"
+						});
+					}
 
 					this.savedState[lowest - 1] = this.savedState[lowest];
 					this.doSaveDebounced();
@@ -243,7 +277,7 @@ class StatGen {
 					this.renderCostsTable();
 				}).appendTo($wrpBtnsTop);
 
-			const $btnAddHigh = $(`<button class="btn btn-xs btn-primary" style="margin-right: 14px;">Add Higher</button>`)
+			const $btnAddHigh = $(`<button class="btn btn-xs btn-primary" style="margin-right: 14px;">Add Higher Score</button>`)
 				.click(() => {
 					const highest = Object.keys(this.savedState).map(Number).sort(SortUtil.ascSort).reverse()[0];
 
@@ -330,10 +364,12 @@ class StatGen {
 	}
 
 	chooseRacialBonus (ele, updateTotal = true) {
+		if (this.raceChoiceAmount == null) return;
 		if ($("input.choose:checked").length > this.raceChoiceCount) return ele.checked = false;
 
+		const baseStat = this.raceStats[$(ele).closest("tr").attr("id")] || 0;
 		$(".racial", ele.parentNode.parentNode)
-			.val(ele.checked ? this.raceChoiceAmount : 0);
+			.val(ele.checked ? baseStat + this.raceChoiceAmount : baseStat);
 		if (updateTotal) this.changeTotal();
 	}
 
@@ -347,11 +383,17 @@ class StatGen {
 			$(".choose").hide().prop("checked", false);
 			$(".pbuy__choose_dummy").hide();
 
-			if (!stats.choose) return;
+			// TODO this only handles the most basic "choose" format
+			if (!stats.choose || !stats.choose.from) {
+				this.raceChoiceAmount = null;
+				this.raceChoiceCount = null;
+				return;
+			}
 
-			const {from} = stats.choose[0];
-			this.raceChoiceAmount = stats.choose[0].amount || 1;
-			this.raceChoiceCount = stats.choose[0].count;
+			this.raceStats = stats;
+			const {from} = stats.choose;
+			this.raceChoiceAmount = stats.choose.amount || 1;
+			this.raceChoiceCount = stats.choose.count;
 
 			$chooseHead.text(`Choose ${this.raceChoiceCount}`).show();
 			Parser.ABIL_ABVS.forEach(abi => $(`#${abi} .${from.includes(abi) ? "choose" : "pbuy__choose_dummy"}`).show());
@@ -373,7 +415,7 @@ class StatGen {
 			$(`#custom`).hide();
 			const stats = race === ""
 				? {}
-				: this.raceData.find(({name, source}) => `${name}_${source}` === race).ability;
+				: this.raceData.find(({name, source}) => `${name}_${source}` === race).ability[0];
 			handleStats(stats);
 		}
 	}
@@ -400,9 +442,10 @@ class StatGen {
 
 	changeTotal () {
 		$("#pointbuy tr[id]").each((i, el) => {
-			const [base, racial, user, total, mod] = $(`input[type="number"]`, el).get();
+			const [base, racial, user, total, mod] = $(`input[data-select="number"]`, el).get();
 			const raw = total.value = Number(base.value) + Number(racial.value) + Number(user.value);
-			mod.value = Math.floor((raw - 10) / 2)
+			const modValue = Math.floor((raw - 10) / 2);
+			mod.value = modValue >= 0 ? `+${modValue}` : modValue;
 		});
 
 		this.doSaveDebounced();
@@ -411,7 +454,7 @@ class StatGen {
 	rollStats () {
 		const formula = $(`#stats-formula`).val();
 
-		const tree = EntryRenderer.dice._parse2(formula);
+		const tree = Renderer.dice._parse2(formula);
 
 		const $rolled = $("#rolled");
 		if (!tree) {

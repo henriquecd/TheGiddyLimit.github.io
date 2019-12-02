@@ -3,6 +3,7 @@
 		{
 			"name": "Player's Handbook",
 			"id": "PHB",
+			"source": "PHB",
 			"author": "Wizards RPG Team",
 			"published": "2014-08-19",
 			"image": "assets/misc/covers/book-phb.png",
@@ -127,7 +128,7 @@
 					"name": "Combat",
 					"headers": [
 						"The Order of Combat",
-						"Movement and Positioning",
+						"Movement and Position",
 						"Actions in Combat",
 						"Making an Attack",
 						"Cover",
@@ -181,6 +182,7 @@
 		{
 			"name": "Monster Manual",
 			"id": "MM",
+			"source": "MM",
 			"author": "Wizards RPG Team",
 			"published": "2014-09-30",
 			"image": "assets/misc/covers/book-mm.png",
@@ -217,6 +219,7 @@
 		{
 			"name": "Dungeon Master's Guide",
 			"id": "DMG",
+			"source": "DMG",
 			"author": "Wizards RPG Team",
 			"published": "2014-12-09",
 			"image": "assets/misc/covers/book-dmg.png",
@@ -401,12 +404,34 @@
 						"type": "appendix",
 						"identifier": "A"
 					}
+				},
+				{
+					"name": "Monster Lists",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "B"
+					}
+				},
+				{
+					"name": "Maps",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "C"
+					}
+				},
+				{
+					"name": "Dungeon Master Inspiration",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "D"
+					}
 				}
 			]
 		},
 		{
 			"name": "Sword Coast Adventurer's Guide",
 			"id": "SCAG",
+			"source": "SCAG",
 			"author": "Wizards RPG Team",
 			"published": "2015-11-03",
 			"image": "assets/misc/covers/book-scag.png",
@@ -513,6 +538,7 @@
 		{
 			"name": "Volo's Guide to Monsters",
 			"id": "VGM",
+			"source": "VGM",
 			"author": "Wizards RPG Team",
 			"published": "2016-11-15",
 			"image": "assets/misc/covers/book-vgm.png",
@@ -550,6 +576,7 @@
 		{
 			"name": "Xanathar's Guide to Everything",
 			"id": "XGE",
+			"source": "XGE",
 			"author": "Wizards RPG Team",
 			"published": "2017-11-21",
 			"image": "assets/misc/covers/book-xge.png",
@@ -625,6 +652,7 @@
 		{
 			"name": "Mordenkainen's Tome of Foes",
 			"id": "MTF",
+			"source": "MTF",
 			"author": "Wizards RPG Team",
 			"published": "2018-05-29",
 			"image": "assets/misc/covers/book-mtf.png",
@@ -717,6 +745,8 @@
 		{
 			"name": "Adventurers League",
 			"id": "AL",
+			"source": "AL",
+			"published": "2016-08-26",
 			"contents": [
 				{
 					"name": "Faction Guide",
@@ -738,6 +768,8 @@
 		{
 			"name": "Dungeon Master's Screen",
 			"id": "Screen",
+			"source": "Screen",
+			"published": "2015-01-20",
 			"contents": [
 				{
 					"name": "Tables"
@@ -747,6 +779,8 @@
 		{
 			"name": "Guildmasters' Guide to Ravnica",
 			"id": "GGR",
+			"source": "GGR",
+			"published": "2018-11-20",
 			"contents": [
 				{
 					"name": "Welcome to Ravnica",
@@ -867,6 +901,535 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Acquisitions Incorporated",
+			"id": "AI",
+			"source": "AI",
+			"published": "2019-06-18",
+			"contents": [
+				{
+					"name": "Acquisitions Incorporated",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 1
+					},
+					"headers": [
+						"It's Just Business",
+						"A Corporate Prospectus",
+						"Fast Franchise Generator"
+					]
+				},
+				{
+					"name": "Growing Your Franchise",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 2
+					},
+					"headers": [
+						"Franchise Advancement",
+						"Company Positions",
+						{
+							"depth": 1,
+							"header": "Cartographer"
+						},
+						{
+							"depth": 1,
+							"header": "Decisionist"
+						},
+						{
+							"depth": 1,
+							"header": "Documancer"
+						},
+						{
+							"depth": 1,
+							"header": "Hoardsperson"
+						},
+						{
+							"depth": 1,
+							"header": "Loremonger"
+						},
+						{
+							"depth": 1,
+							"header": "Obviator"
+						},
+						{
+							"depth": 1,
+							"header": "Occultant"
+						},
+						{
+							"depth": 1,
+							"header": "Secretarian"
+						},
+						"Franchise Tasks and Downtime"
+					]
+				},
+				{
+					"name": "Player Options",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 3
+					},
+					"headers": [
+						"Backgrounds",
+						"Playing with Class",
+						"New Race: Verdan",
+						"New Spells",
+						"Factions and Rivals"
+					]
+				},
+				{
+					"name": "Acq Inc",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "A"
+					},
+					"headers": [
+						"Omin Dran",
+						"Jim Darkmagic",
+						"Viari",
+						"Môrgæn",
+						"Flabbergast",
+						"The \"C\" Team",
+						"The \"B\" Team",
+						"House Dran"
+					]
+				},
+				{
+					"name": "Monsters",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "B"
+					},
+					"headers": [
+						"Iconic Faction Features",
+						"Iconic Franchise Features"
+					]
+				},
+				{
+					"name": "Vehicles",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "C"
+					}
+				},
+				{
+					"name": "Orrery and Components",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "D"
+					}
+				},
+				{
+					"name": "Trinkets",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "E"
+					}
+				}
+			]
+		},
+		{
+			"name": "Sage Advice Compendium",
+			"id": "SAC",
+			"source": "SAC",
+			"published": "2019-01-31",
+			"contents": [
+				{
+					"name": "Sage Advice Compendium",
+					"headers": [
+						"Rules References",
+						"Compiled Answers",
+						"The Role of Rules",
+						"Character Creation",
+						"Racial Traits",
+						"Class Features",
+						"Backgrounds",
+						"Equipment",
+						"Multiclassing",
+						"Feats",
+						"Ability Checks",
+						"Adventuring",
+						"Combat",
+						"Spellcasting",
+						"Monsters",
+						"Magic Items"
+					]
+				}
+			]
+		},
+		{
+			"name": "Eberron: Rising from the Last War",
+			"id": "ERLW",
+			"source": "ERLW",
+			"published": "2019-11-19",
+			"contents": [
+				{
+					"name": "Welcome to Eberron",
+					"headers": [
+						"Using This Book",
+						"Seven Things to Know",
+						"History of Eberron",
+						"Life in Khorvaire",
+						"Pulp Adventure",
+						"Noir Intrigue",
+						"A Magical World",
+						"The Last War",
+						"The Draconic Prophecy"
+					]
+				},
+				{
+					"name": "Character Creation",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 1
+					},
+					"headers": [
+						"Races",
+						"Changelings",
+						"Dragonborn",
+						"Dwarves",
+						"Elves",
+						"Gnomes",
+						"Goblinoids",
+						"Half-Elves",
+						"Halflings",
+						"Humans",
+						"Kalashtar",
+						"Orcs and Half-Orcs",
+						"Shifters",
+						"Tieflings",
+						"Warforged"
+					]
+				},
+				{
+					"name": "Character Creation - Dragonmarks",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 1
+					},
+					"headers": [
+						"Dragonmarks",
+						"The Mark of Detection",
+						"The Mark of Finding",
+						"The Mark of Handling",
+						"The Mark of Healing",
+						"The Mark of Hospitality",
+						"The Mark of Making",
+						"The Mark of Passage",
+						"The Mark of Scribing",
+						"The Mark of Sentinel",
+						"The Mark of Shadow",
+						"The Mark of Storm",
+						"The Mark of Warding",
+						"Aberrant Dragonmarks",
+						"Background"
+					]
+				},
+				{
+					"name": "Character Creation - Artificer",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 1
+					},
+					"headers": [
+						"Class: Artificer",
+						"Class Features",
+						"Artificer Specialists",
+						"Artificer Infusions"
+					]
+				},
+				{
+					"name": "Character Creation - Group Patrons",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 1
+					},
+					"headers": [
+						"How Patrons Work",
+						"Patrons in Eberron",
+						"Adventurers' Guild",
+						"Crime Syndicate",
+						"Dragonmarked House",
+						"Espionage Agency",
+						"Head of State",
+						"Immortal Being",
+						"Inquisitive Agency",
+						"Military Force",
+						"Newspaper",
+						"Religious Order",
+						"University"
+					]
+				},
+				{
+					"name": "Khorvaire Gazetteer",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 2
+					},
+					"headers": [
+						"Nations of Khorvaire",
+						"Aundair",
+						"Breland",
+						"Cyre (The Mournland)",
+						"Darguun",
+						"Demon Wastes",
+						"Droaam",
+						"Eldeen Reaches",
+						"Karrnath",
+						"Lhazaar Principalities",
+						"Mror Holds",
+						"Q'barra",
+						"Shadow Marches",
+						"Talenta Plains",
+						"Thrane",
+						"Thronehold",
+						"Valenar",
+						"Zilargo"
+					]
+				},
+				{
+					"name": "Khorvaire Gazeteer - Distant Lands",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 2
+					},
+					"headers": [
+						"Aerenal",
+						"Argonnessen",
+						"Khyber",
+						"North and South Poles",
+						"Sarlona",
+						"Xen'drik"
+					]
+				},
+				{
+					"name": "Khorvaire Gazeteer - Faiths of Khorvaire",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 2
+					},
+					"headers": [
+						"Deities of Eberron",
+						"Sovereign Host",
+						"Dark Six",
+						"Church of the Silver Flame",
+						"Blood of Vol",
+						"Cults of the Dragon Below",
+						"Path of Light",
+						"Spirits of the Past",
+						"Undying Court",
+						"Druids of Khorvaire"
+					]
+				},
+				{
+					"name": "Sharn, City of Towers",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 3
+					},
+					"headers": [
+						"The Shape of Sharn",
+						"Guide to the City",
+						"Wards of Sharn",
+						"Central Plateau",
+						"Dura",
+						"Menthis Plateau",
+						"Northedge",
+						"Tavick's Landing",
+						"Above and Below",
+						"Dungeons of Sharn",
+						"Criminal Activities",
+						"Forces of the Law"
+					]
+				},
+				{
+					"name": "Building Eberron Adventures",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 4
+					},
+					"headers": [
+						"Adventure Themes",
+						"The Aurum",
+						"Cults of the Dragon Below",
+						"Dragonmarked Houses",
+						"Dragons",
+						"The Dreaming Dark",
+						"Droaam",
+						"Gatekeepers",
+						"Goblinoids (Heirs of Dhakaan)"
+					]
+				},
+				{
+					"name": "Building Eberron Adventures",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 4
+					},
+					"headers": [
+						"The Last War",
+						"Lord of Blades",
+						"The Lords of Dust",
+						"The Mournland",
+						"Order of the Emerald Claw",
+						"Planes of Existence",
+						"Tour of the Planes",
+						"Eberron and the Multiverse",
+						"Gods, Celestials, and Fiends",
+						"Travel"
+					]
+				},
+				{
+					"name": "Building Eberron Adventures - Sharn",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 4
+					},
+					"headers": [
+						"Adventures in Sharn",
+						"Crime in Sharn",
+						"The Boromar Clan",
+						"Daask",
+						"House Tarkanan",
+						"The Tyrants",
+						"Sharn Watch"
+					]
+				},
+				{
+					"name": "Treasures",
+					"headers": [
+						"Dragonshards",
+						"Magic Items",
+						"Eldritch Machines",
+						"Everyday Magic Items"
+					]
+				},
+				{
+					"name": "Friends and Foes",
+					"headers": [
+						"Daelkyr"
+					]
+				}
+			]
+		},
+		{
+			"name": "Dungeons & Dragons vs. Rick and Morty: Basic Rules",
+			"id": "RMR",
+			"source": "RMR",
+			"contents": [
+				{
+					"name": "How to Play",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 1
+					},
+					"headers": [
+						"Getting Started",
+						{
+							"depth": 1,
+							"header": "1. The DM describes the environment"
+						},
+						{
+							"depth": 1,
+							"header": "2. The players describe what they want to do"
+						},
+						{
+							"depth": 1,
+							"header": "3. The DM narrates the results of the adventurers' actions."
+						},
+						"Six Abilities",
+						{
+							"depth": 1,
+							"header": "1. Roll the die"
+						},
+						{
+							"depth": 1,
+							"header": "2. Apply circumstantial bonuses and penalties"
+						},
+						{
+							"depth": 1,
+							"header": "3. Compare the total to a target number"
+						}
+					]
+				},
+				{
+					"name": "Combat",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 2
+					},
+					"headers": [
+						"The Order of Combat",
+						"Movement and Position",
+						"Actions in Combat",
+						"Making an Attack",
+						"Cover",
+						"Damage and Healing"
+					]
+				},
+				{
+					"name": "Adventuring",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 3
+					},
+					"headers": [
+						"Travel",
+						"Resting",
+						"Rewards",
+						"Equipment",
+						"Armor and Shields",
+						"Weapons",
+						"Miscellaneous Gear and Services"
+					]
+				},
+				{
+					"name": "Spellcasting",
+					"ordinal": {
+						"type": "chapter",
+						"identifier": 4
+					},
+					"headers": [
+						"What Is a Spell?",
+						"Casting a Spell",
+						"Spell Lists",
+						"Spells"
+					]
+				},
+				{
+					"name": "Conditions",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "A"
+					},
+					"headers": [
+						"Blinded",
+						"Charmed",
+						"Deafened",
+						"Exhaustion",
+						"Frightened",
+						"Grappled",
+						"Incapacitated",
+						"Invisible",
+						"Paralyzed",
+						"Petrified",
+						"Poisoned",
+						"Prone",
+						"Restrained",
+						"Stunned",
+						"Unconscious"
+					]
+				},
+				{
+					"name": "WHAT IS THE F***ING POINT?!",
+					"ordinal": {
+						"type": "appendix",
+						"identifier": "B"
+					}
+				}
+			],
+			"published": "2019-11-19"
 		}
 	]
 }

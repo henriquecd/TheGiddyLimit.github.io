@@ -1,3 +1,5 @@
+"use strict";
+
 // a simple money converter, i.e.: input x electrum, y silver, z copper and get the total in gold, or in any other type of coin chosen.
 class MoneyConverter {
 	static make$Converter (board, state) {
@@ -23,7 +25,7 @@ class MoneyConverter {
 		}).reverse();
 		const DEFAULT_CURRENCY = 3;
 
-		const $wrpConverter = $(`<div class="dm_money split-column"/>`);
+		const $wrpConverter = $(`<div class="dm_money dm__panel-bg split-column"/>`);
 
 		const doUpdate = () => {
 			if (!$wrpRows.find(`.dm_money__row`).length) {
@@ -71,7 +73,7 @@ class MoneyConverter {
 						else {
 							const ix = Number($e.find(`select`).val());
 							totals[ix] = (totals[ix] || 0) + asNum;
-							allowedCategories.add(CURRENCY[ix].cat);
+							allowedCategories.add(CURRENCY[ix]._cat);
 						}
 					}
 				});
@@ -136,7 +138,7 @@ class MoneyConverter {
 				});
 			}
 
-			$iptOut.val(`${outParts.join("; ")}${totalWeight ? ` (${totalWeight.toLocaleString()} lbs.)` : ""}`);
+			$iptOut.val(`${outParts.join("; ")}${totalWeight ? ` (${totalWeight.toLocaleString()} lb.)` : ""}`);
 
 			board.doSaveStateDebounced();
 		};
@@ -169,18 +171,18 @@ class MoneyConverter {
 		const $btnSettings = $(`<button class="btn btn-default btn-sm" title="Settings"><span class="glyphicon glyphicon-cog"/></button>`)
 			.appendTo($wrpBtnAddSettings)
 			.click(() => {
-				const $modalInner = DmScreenUtil.getShow$Modal(
-					"Settings",
-					() => doUpdate()
-				);
+				const {$modalInner} = UiUtil.getShowModal({
+					title: "Settings",
+					cbClose: () => doUpdate()
+				});
 				[...CURRENCY_INDEXED].reverse().forEach(cx => {
-					DmScreenUtil.getAddModal$RowCb($modalInner, `Disable ${cx.n}`, disabledCurrency, cx.ix);
+					UiUtil.$getAddModalRowCb($modalInner, `Disable ${cx.n} in Output`, disabledCurrency, cx.ix);
 				});
 			});
 		const $iptOut = $(`<input class="form-control input-sm dm_money__out" disabled/>`)
 			.appendTo($wrpCtrlLhs)
-			.mousedown(() => {
-				copyText($iptOut.val());
+			.mousedown(async () => {
+				await MiscUtil.pCopyTextToClipboard($iptOut.val());
 				JqueryUtil.showCopiedEffect($iptOut);
 			});
 

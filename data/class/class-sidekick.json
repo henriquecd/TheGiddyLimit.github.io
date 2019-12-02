@@ -6,15 +6,10 @@
 			"classFeatures": [
 				[
 					{
-						"type": "entries",
+						"type": "inset",
+						"name": "Sidekick Class",
 						"entries": [
-							{
-								"type": "entries",
-								"name": "Sidekick Class",
-								"entries": [
-									"{@note Note: this class is intended for NPC {@variantrule sidekicks|uasidekicks}.}"
-								]
-							}
+							"{@note Note: this class is intended for NPC {@variantrule sidekicks|uasidekicks}.}"
 						]
 					},
 					{
@@ -60,7 +55,7 @@
 					{
 						"name": "Extra Attack (1 extra)",
 						"entries": [
-							"Beginning at 5th level, the sidekick can attach twice, instead of once, whenever it takes the Attack action on its turn.",
+							"Beginning at 5th level, the sidekick can attack twice, instead of once, whenever it takes the Attack action on its turn.",
 							"The number of attacks increases to three when the sidekick reaches 11th level and to four when it reaches 20th level."
 						]
 					}
@@ -195,7 +190,8 @@
 					"source": "UASidekicks",
 					"page": 2
 				}
-			]
+			],
+			"page": 2
 		},
 		{
 			"name": "Expert Sidekick",
@@ -203,16 +199,11 @@
 			"classFeatures": [
 				[
 					{
-						"type": "entries",
+						"type": "inset",
+						"name": "Sidekick Class",
 						"entries": [
-							{
-								"type": "entries",
-								"name": "Sidekick Class",
-								"entries": [
-									"To gain the expert class, a creature must have at least one language in its stat block that it can speak.",
-									"{@note Note: this class is intended for NPC {@variantrule sidekicks|uasidekicks}.}"
-								]
-							}
+							"To gain the expert class, a creature must have at least one language in its stat block that it can speak.",
+							"{@note Note: this class is intended for NPC {@variantrule sidekicks|uasidekicks}.}"
 						]
 					},
 					{
@@ -281,7 +272,7 @@
 					{
 						"name": "Evasion",
 						"entries": [
-							"Beginning at 7th level, because of exrtraordinary good luck, the sidekick is skilled at avoiding certain dangers. When the sidekick is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, it instead takes no damage if it succeeds on the saving throw, and only half damage if it failed. The sidekick doesn't benefit from this feature while incapacitated."
+							"Beginning at 7th level, because of extraordinary good luck, the sidekick is skilled at avoiding certain dangers. When the sidekick is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, it instead takes no damage if it succeeds on the saving throw, and only half damage if it failed. The sidekick doesn't benefit from this feature while incapacitated."
 						]
 					}
 				],
@@ -400,7 +391,8 @@
 					"source": "UASidekicks",
 					"page": 3
 				}
-			]
+			],
+			"page": 3
 		},
 		{
 			"name": "Spellcaster Sidekick",
@@ -547,11 +539,11 @@
 						"{@filter 2nd|spells|level=2}",
 						"{@filter 3rd|spells|level=3}",
 						"{@filter 4th|spells|level=4}",
-						"{@filter 3rd|spells|level=5}",
-						"{@filter 3rd|spells|level=6}",
-						"{@filter 3rd|spells|level=7}",
-						"{@filter 3rd|spells|level=8}",
-						"{@filter 3rd|spells|level=9}"
+						"{@filter 5th|spells|level=5}",
+						"{@filter 6th|spells|level=6}",
+						"{@filter 7th|spells|level=7}",
+						"{@filter 8th|spells|level=8}",
+						"{@filter 9th|spells|level=9}"
 					],
 					"rows": [
 						[
@@ -780,16 +772,11 @@
 			"classFeatures": [
 				[
 					{
-						"type": "entries",
+						"type": "inset",
+						"name": "Sidekick Class",
 						"entries": [
-							{
-								"type": "entries",
-								"name": "Sidekick Class",
-								"entries": [
-									"To gain the spellcaster class, a creature must have at least one language in its stat block that it can speak.",
-									"{@note Note: this class is intended for NPC {@variantrule sidekicks|uasidekicks}.}"
-								]
-							}
+							"To gain the spellcaster class, a creature must have at least one language in its stat block that it can speak.",
+							"{@note Note: this class is intended for NPC {@variantrule sidekicks|uasidekicks}.}"
 						]
 					},
 					{
@@ -812,9 +799,9 @@
 									"Focus"
 								],
 								"colStyles": [
-									"col-xs-4",
-									"col-xs-4",
-									"col-xs-4"
+									"col-4",
+									"col-4",
+									"col-4"
 								],
 								"rows": [
 									[
@@ -1004,7 +991,8 @@
 					"source": "UASidekicks",
 					"page": 4
 				}
-			]
+			],
+			"page": 4
 		}
 	]
 }

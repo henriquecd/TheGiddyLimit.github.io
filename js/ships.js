@@ -18,12 +18,11 @@ async function onJsonLoad (data) {
 		sortFunction: SortUtil.listSort
 	});
 
-	filterBox = await pInitFilterBox(
-		sourceFilter
-	);
+	filterBox = await pInitFilterBox({filters: [sourceFilter]});
 
+	const $outVisibleResults = $(`.lst__wrp-search-visible`);
 	list.on("updated", () => {
-		filterBox.setCount(list.visibleItems.length, list.items.length);
+		$outVisibleResults.html(`${list.visibleItems.length}/${list.items.length}`);
 	});
 
 	// filtering function
@@ -42,13 +41,15 @@ async function onJsonLoad (data) {
 	addShips(data);
 	BrewUtil.pAddBrewData()
 		.then(handleBrew)
-		.then(BrewUtil.pAddLocalBrewData)
+		.then(() => BrewUtil.bind({list}))
+		.then(() => BrewUtil.pAddLocalBrewData())
 		.catch(BrewUtil.pPurgeBrew)
 		.then(async () => {
 			BrewUtil.makeBrewButton("manage-brew");
-			BrewUtil.bind({list, filterBox, sourceFilter});
+			BrewUtil.bind({filterBox, sourceFilter});
 			await ListUtil.pLoadState();
 			RollerUtil.addListRollButton();
+			ListUtil.addListShowHide();
 
 			History.init(true);
 			ExcludeUtil.checkShowAllExcluded(shipList, $(`#pagecontent`));
@@ -72,12 +73,11 @@ function addShips (data) {
 
 		if (ExcludeUtil.isExcluded(it.name, "ship", it.source)) continue;
 
-		const abvSource = Parser.sourceJsonToAbv(it.source);
 		tempString += `
 			<li class="row" ${FLTR_ID}="${shI}" onclick="ListUtil.toggleSelected(event, this)" oncontextmenu="ListUtil.openContextMenu(event, this)">
 				<a id="${shI}" href="#${UrlUtil.autoEncodeHash(it)}" title="${it.name}">
-					<span class="name col-10">${it.name}</span>
-					<span class="source col-2 text-align-center ${Parser.sourceJsonToColor(abvSource)}" title="${Parser.sourceJsonToFull(it.source)}">${abvSource}</span>
+					<span class="name col-10 pl-0">${it.name}</span>
+					<span class="source col-2 text-center ${Parser.sourceJsonToColor(it.source)} pr-0" title="${Parser.sourceJsonToFull(it.source)}" ${BrewUtil.sourceJsonToStyle(it.source)}>${Parser.sourceJsonToAbv(it.source)}</span>
 					
 					<span class="uniqueid hidden">${it.uniqueId ? it.uniqueId : shI}</span>
 				</a>
@@ -85,13 +85,10 @@ function addShips (data) {
 		`;
 
 		// populate filters
-		sourceFilter.addIfAbsent(it.source);
+		sourceFilter.addItem(it.source);
 	}
 	const lastSearch = ListUtil.getSearchTermAndReset(list);
 	$(`#shipList`).append(tempString);
-
-	// sort filters
-	sourceFilter.items.sort(SortUtil.ascSort);
 
 	list.reIndex();
 	if (lastSearch) list.search(lastSearch);
@@ -105,7 +102,7 @@ function addShips (data) {
 		primaryLists: [list]
 	});
 	ListUtil.bindPinButton();
-	EntryRenderer.hover.bindPopoutButton(shipList);
+	Renderer.hover.bindPopoutButton(shipList);
 	UrlUtil.bindLinkExportButton(filterBox);
 	ListUtil.bindDownloadButton();
 	ListUtil.bindUploadButton();
@@ -121,24 +118,62 @@ function handleFilterChange () {
 			it.source
 		);
 	});
-	FilterBox.nextIfHidden(shipList);
+	FilterBox.selectFirstVisible(shipList);
 }
 
 function getSublistItem (it, pinId) {
 	return `
 		<li class="row" ${FLTR_ID}="${pinId}" oncontextmenu="ListUtil.openSubContextMenu(event, this)">
 			<a href="#${UrlUtil.autoEncodeHash(it)}" title="${it.name}">
-				<span class="name col-12">${it.name}</span>
+				<span class="name col-12 px-0">${it.name}</span>
 				<span class="id hidden">${pinId}</span>
 			</a>
 		</li>
 	`;
 }
 
-function loadhash (jsonIndex) {
-	EntryRenderer.getDefaultRenderer().setFirstSection(true);
-	const it = shipList[jsonIndex];
+function loadHash (jsonIndex) {
+	Renderer.get().setFirstSection(true);
+	const ship = shipList[jsonIndex];
 	const $content = $(`#pagecontent`).empty();
-	$content.append(EntryRenderer.ship.getRenderedString(it));
+
+	function buildStatsTab () {
+		$content.append(Renderer.ship.getRenderedString(ship));
+	}
+
+	function buildFluffTab (isImageTab) {
+		return Renderer.utils.buildFluffTab(
+			isImageTab,
+			$content,
+			ship,
+			(fluffJson) => ship.fluff || fluffJson.ship.find(it => it.name === ship.name && it.source === ship.source),
+			`data/fluff-ships.json`,
+			() => true
+		);
+	}
+
+	const statTab = Renderer.utils.tabButton(
+		"Item",
+		() => {},
+		buildStatsTab
+	);
+	const infoTab = Renderer.utils.tabButton(
+		"Info",
+		() => {},
+		buildFluffTab
+	);
+	const picTab = Renderer.utils.tabButton(
+		"Images",
+		() => {},
+		() => buildFluffTab(true)
+	);
+
+	Renderer.utils.bindTabButtons(statTab, infoTab, picTab);
+
 	ListUtil.updateSelected();
+}
+
+function loadSubHash (sub) {
+	sub = filterBox.setFromSubHashes(sub);
+	ListUtil.setFromSubHashes(sub);
 }

@@ -1,158 +1,129 @@
 "use strict";
 
-const JSON_URL = "data/objects.json";
+class ObjectsPage extends ListPage {
+	constructor () {
+		const sourceFilter = getSourceFilter();
+		const miscFilter = new Filter({header: "Miscellaneous", items: ["SRD"]});
 
-function imgError (x) {
-	if (x) $(x).remove();
-	$(`.rnd-name`).find(`span.stats-source`).css("margin-right", "0");
-}
+		super({
+			dataSource: "data/objects.json",
 
-function handleStatblockScroll (event, ele) {
-	$(`#token_image`)
-		.toggle(ele.scrollTop < 32)
-		.css({
-			opacity: (32 - ele.scrollTop) / 32,
-			top: -ele.scrollTop
-		})
-}
+			filters: [
+				sourceFilter,
+				miscFilter
+			],
+			filterSource: sourceFilter,
 
-window.onload = async function load () {
-	await ExcludeUtil.pInitialise();
-	SortUtil.initHandleFilterButtonClicks();
-	DataUtil.loadJSON(JSON_URL).then(onJsonLoad);
-};
+			listClass: "objects",
 
-let list;
-function onJsonLoad (data) {
-	list = ListUtil.search({
-		valueNames: ["name", "size", "source", "uniqueid"],
-		listClass: "objects",
-		sortFunction: SortUtil.listSort
-	});
+			sublistClass: "subobjects",
 
-	EntryRenderer.hover.bindPopoutButton(objectsList);
-
-	const subList = ListUtil.initSublist({
-		valueNames: ["name", "size", "id"],
-		listClass: "subobjects",
-		itemList: objectsList,
-		getSublistRow: getSublistItem,
-		primaryLists: [list]
-	});
-	ListUtil.initGenericPinnable();
-
-	addObjects(data);
-	BrewUtil.pAddBrewData()
-		.then(handleBrew)
-		.then(BrewUtil.pAddLocalBrewData)
-		.catch(BrewUtil.pPurgeBrew)
-		.then(async () => {
-			BrewUtil.makeBrewButton("manage-brew");
-			BrewUtil.bind({list});
-			await ListUtil.pLoadState();
-
-			History.init(true);
-			ExcludeUtil.checkShowAllExcluded(objectsList, $(`#pagecontent`));
+			dataProps: ["object"]
 		});
-}
 
-function handleBrew (homebrew) {
-	addObjects(homebrew);
-	return Promise.resolve();
-}
-
-let objectsList = [];
-let obI = 0;
-function addObjects (data) {
-	if (!data.object || !data.object.length) return;
-
-	objectsList = objectsList.concat(data.object);
-
-	let tempString = "";
-	for (; obI < objectsList.length; obI++) {
-		const obj = objectsList[obI];
-		if (ExcludeUtil.isExcluded(obj.name, "object", obj.source)) continue;
-		const abvSource = Parser.sourceJsonToAbv(obj.source);
-
-		tempString += `
-			<li class="row" ${FLTR_ID}="${obI}" onclick="ListUtil.toggleSelected(event, this)" oncontextmenu="ListUtil.openContextMenu(event, this)">
-				<a id="${obI}" href="#${UrlUtil.autoEncodeHash(obj)}" title="${obj.name}">
-					<span class="name col-8">${obj.name}</span>
-					<span class="size col-2">${Parser.sizeAbvToFull(obj.size)}</span>
-					<span class="source col-2 text-align-center ${Parser.sourceJsonToColor(obj.source)}" title="${Parser.sourceJsonToFull(obj.source)}">${abvSource}</span>
-					
-					<span class="uniqueid hidden">${obj.uniqueId ? obj.uniqueId : obI}</span>
-				</a>
-			</li>
-		`;
+		this._sourceFilter = sourceFilter;
 	}
-	const lastSearch = ListUtil.getSearchTermAndReset(list);
-	$(`#objectsList`).append(tempString);
 
-	list.reIndex();
-	if (lastSearch) list.search(lastSearch);
-	list.sort("name");
+	getListItem (obj, obI) {
+		this._sourceFilter.addItem(obj.source);
+		obj._fMisc = obj.srd ? ["SRD"] : [];
 
-	ListUtil.setOptions({
-		itemList: objectsList,
-		getSublistRow: getSublistItem,
-		primaryLists: [list]
-	});
-	ListUtil.bindPinButton();
-	EntryRenderer.hover.bindPopoutButton(objectsList);
-	ListUtil.bindDownloadButton();
-	ListUtil.bindUploadButton();
-}
+		const eleLi = document.createElement("li");
+		eleLi.className = "row";
 
-function getSublistItem (obj, pinId) {
-	return `
-		<li class="row" ${FLTR_ID}="${pinId}" oncontextmenu="ListUtil.openSubContextMenu(event, this)">
-			<a href="#${UrlUtil.autoEncodeHash(obj)}" title="${obj.name}">
-				<span class="name col-9">${obj.name}</span>
-				<span class="ability col-3">${Parser.sizeAbvToFull(obj.size)}</span>
-				<span class="id hidden">${pinId}</span>
-			</a>
-		</li>
-	`;
-}
+		const source = Parser.sourceJsonToAbv(obj.source);
+		const hash = UrlUtil.autoEncodeHash(obj);
+		const size = Parser.sizeAbvToFull(obj.size);
 
-const renderer = EntryRenderer.getDefaultRenderer();
-function loadhash (jsonIndex) {
-	renderer.setFirstSection(true);
+		eleLi.innerHTML = `<a href="#${hash}" class="lst--border">
+			<span class="bold col-8 pl-0">${obj.name}</span>
+			<span class="col-2 text-center">${size}</span>
+			<span class="col-2 text-center ${Parser.sourceJsonToColor(obj.source)} pr-0" title="${Parser.sourceJsonToFull(obj.source)}" ${BrewUtil.sourceJsonToStyle(obj.source)}>${source}</span>
+		</a>`;
 
-	const obj = objectsList[jsonIndex];
-
-	const renderStack = [];
-
-	if (obj.entries) renderer.recursiveEntryRender({entries: obj.entries}, renderStack, 2);
-	if (obj.actionEntries) renderer.recursiveEntryRender({entries: obj.actionEntries}, renderStack, 2);
-
-	const $content = $(`#pagecontent`).empty();
-	$content.append(`
-		${EntryRenderer.utils.getBorderTr()}
-		${EntryRenderer.utils.getNameTr(obj)}
-		<tr class="text"><td colspan="6"><i>${obj.type !== "GEN" ? `${Parser.sizeAbvToFull(obj.size)} object` : `Variable size object`}</i><br></td></tr>
-		<tr class="text"><td colspan="6">
-			<b>Armor Class:</b> ${obj.ac}<br>
-			<b>Hit Points:</b> ${obj.hp}<br>
-			<b>Damage Immunities:</b> ${obj.immune}<br>
-			${obj.resist ? `<b>Damage Resistances:</b> ${obj.resist}<br>` : ""}
-			${obj.vulnerable ? `<b>Damage Vulnerabilities:</b> ${obj.vulnerable}<br>` : ""}
-		</td></tr>
-		<tr class="text"><td colspan="6">${renderStack.join("")}</td></tr>
-		${EntryRenderer.utils.getPageTr(obj)}
-		${EntryRenderer.utils.getBorderTr()}
-	`);
-
-	const $floatToken = $(`#float-token`).empty();
-	if (obj.tokenURL || !obj.uniqueId) {
-		const imgLink = obj.tokenURL || UrlUtil.link(`img/objects/${obj.name.replace(/"/g, "")}.png`);
-		$floatToken.append(`
-			<a href="${imgLink}" target="_blank">
-				<img src="${imgLink}" id="token_image" class="token" onerror="imgError(this)" alt="${obj.name}">
-			</a>`
+		const listItem = new ListItem(
+			obI,
+			eleLi,
+			obj.name,
+			{
+				hash,
+				source,
+				size,
+				uniqueId: obj.uniqueId ? obj.uniqueId : obI
+			}
 		);
-	} else imgError();
 
-	ListUtil.updateSelected();
+		eleLi.addEventListener("click", (evt) => this._list.doSelect(listItem, evt));
+		eleLi.addEventListener("contextmenu", (evt) => ListUtil.openContextMenu(evt, this._list, listItem));
+
+		return listItem;
+	}
+
+	handleFilterChange () {
+		const f = this._filterBox.getValues();
+		this._list.filter((item) => {
+			const it = this._dataList[item.ix];
+			return this._filterBox.toDisplay(
+				f,
+				it.source,
+				it._fMisc
+			);
+		});
+		FilterBox.selectFirstVisible(this._dataList);
+	}
+
+	getSublistItem (obj, pinId) {
+		const hash = UrlUtil.autoEncodeHash(obj);
+		const size = Parser.sizeAbvToFull(obj.size);
+
+		const $ele = $(`<li class="row">
+			<a href="#${hash}" class="lst--border">
+				<span class="bold col-9 pl-0">${obj.name}</span>
+				<span class="col-3 pr-0 text-center">${size}</span>
+			</a>
+		</li>`)
+			.contextmenu(evt => ListUtil.openSubContextMenu(evt, listItem));
+
+		const listItem = new ListItem(
+			pinId,
+			$ele,
+			obj.name,
+			{
+				hash,
+				size
+			}
+		);
+		return listItem;
+	}
+
+	doLoadHash (id) {
+		const obj = this._dataList[id];
+
+		const renderStack = [];
+
+		if (obj.entries) this._renderer.recursiveRender({entries: obj.entries}, renderStack, {depth: 2});
+		if (obj.actionEntries) this._renderer.recursiveRender({entries: obj.actionEntries}, renderStack, {depth: 2});
+
+		$(`#pagecontent`).empty().append(RenderObjects.$getRenderedObject(obj));
+
+		const $floatToken = $(`#float-token`).empty();
+		if (obj.tokenUrl || !obj.uniqueId) {
+			const imgLink = obj.tokenUrl || UrlUtil.link(`img/objects/${obj.name.replace(/"/g, "")}.png`);
+			$floatToken.append(`
+			<a href="${imgLink}" target="_blank" rel="noopener">
+				<img src="${imgLink}" id="token_image" class="token" onerror="TokenUtil.imgError(this)" alt="${obj.name}">
+			</a>`
+			);
+		} else TokenUtil.imgError();
+
+		ListUtil.updateSelected();
+	}
+
+	doLoadSubHash (sub) {
+		sub = this._filterBox.setFromSubHashes(sub);
+		ListUtil.setFromSubHashes(sub);
+	}
 }
+
+const objectsPage = new ObjectsPage();
+window.addEventListener("load", () => objectsPage.pOnLoad());

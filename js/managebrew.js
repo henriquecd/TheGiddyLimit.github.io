@@ -1,8 +1,9 @@
+"use strict";
+
 class ManageBrew {
 	static initialise () {
 		BrewUtil.pAddBrewData()
-			.then(BrewUtil.pAddLocalBrewData)
-			.catch(BrewUtil.pPurgeBrew)
+			.then(() => BrewUtil.pAddLocalBrewData())
 			.then(() => {
 				ManageBrew.pRender();
 			})
@@ -46,11 +47,11 @@ class ManageBrew {
 								keys.forEach(k => {
 									const toDisplay = displayFn ? displayFn(BrewUtil.homebrewMeta, metaType, k) : k.toTitleCase();
 
-									const $row = $(`<li class="row manbrew__row">
+									const $row = $(`<li class="row manbrew__row lst--border">
 										<span class="action col-10 manbrew__col--tall">${toDisplay}</span>
 									</li>`).appendTo($lst);
 
-									const $btns = $(`<span class="col-2 text-align-right"/>`).appendTo($row);
+									const $btns = $(`<span class="col-2 text-right"/>`).appendTo($row);
 									$(`<button class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button>`).appendTo($btns).click(() => {
 										delete BrewUtil.homebrewMeta[metaType][k];
 										if (!Object.keys(BrewUtil.homebrewMeta[metaType]).length) delete BrewUtil.homebrewMeta[metaType];
@@ -75,6 +76,9 @@ class ManageBrew {
 						}
 						case "spellSchools":
 							populateGenericSection("Spell Schools", (brew, metaType, k) => brew[metaType][k].full || k);
+							break;
+						case "itemValueConversions":
+							populateGenericSection("Item Value Conversion Tables", (brew, metaType, k) => `${k}: ${brew[metaType][k].map(it => `${it.coin}=${it.mult}`).join(", ")}`);
 							break;
 					}
 					handleSecChange(i);

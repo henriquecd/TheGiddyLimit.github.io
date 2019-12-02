@@ -1,224 +1,170 @@
 "use strict";
-const JSON_URL = "data/backgrounds.json";
-const JSON_FLUFF_URL = "data/fluff-backgrounds.json";
-const renderer = EntryRenderer.getDefaultRenderer();
 
-let list;
-const sourceFilter = getSourceFilter();
-const skillFilter = new Filter({header: "Skill Proficiencies", displayFn: StrUtil.toTitleCase});
-const toolFilter = new Filter({header: "Tool Proficiencies", displayFn: StrUtil.toTitleCase});
-const languageFilter = new Filter({header: "Language Proficiencies", displayFn: StrUtil.toTitleCase});
-let filterBox;
+class BackgroundPage extends ListPage {
+	constructor () {
+		const sourceFilter = getSourceFilter();
+		const skillFilter = new Filter({header: "Skill Proficiencies", displayFn: StrUtil.toTitleCase});
+		const toolFilter = new Filter({header: "Tool Proficiencies", displayFn: StrUtil.toTitleCase});
+		const languageFilter = new Filter({header: "Language Proficiencies", displayFn: StrUtil.toTitleCase});
+		const miscFilter = new Filter({header: "Miscellaneous", items: ["SRD"]});
 
-window.onload = async function load () {
-	filterBox = await pInitFilterBox(
-		sourceFilter,
-		skillFilter,
-		toolFilter,
-		languageFilter
-	);
-	await ExcludeUtil.pInitialise();
-	SortUtil.initHandleFilterButtonClicks();
-	onJsonLoad(await DataUtil.loadJSON(JSON_URL));
-};
+		super({
+			dataSource: "data/backgrounds.json",
+			dataSourceFluff: "data/fluff-backgrounds.json",
 
-function onJsonLoad (data) {
-	list = ListUtil.search({
-		valueNames: ["name", "source", "skills", "uniqueid"],
-		listClass: "backgrounds"
-	});
+			filters: [
+				sourceFilter,
+				skillFilter,
+				toolFilter,
+				languageFilter,
+				miscFilter
+			],
+			filterSource: sourceFilter,
 
-	list.on("updated", () => {
-		filterBox.setCount(list.visibleItems.length, list.items.length);
-	});
+			listClass: "backgrounds",
 
-	$(filterBox).on(
-		FilterBox.EVNT_VALCHANGE,
-		handleFilterChange
-	);
+			sublistClass: "subbackgrounds",
 
-	const subList = ListUtil.initSublist({
-		valueNames: ["name", "skills", "id"],
-		listClass: "subbackgrounds",
-		getSublistRow: getSublistItem
-	});
-	ListUtil.initGenericPinnable();
-
-	addBackgrounds(data);
-	BrewUtil.pAddBrewData()
-		.then(handleBrew)
-		.then(BrewUtil.pAddLocalBrewData)
-		.catch(BrewUtil.pPurgeBrew)
-		.then(async () => {
-			BrewUtil.makeBrewButton("manage-brew");
-			BrewUtil.bind({list, filterBox, sourceFilter});
-			await ListUtil.pLoadState();
-			RollerUtil.addListRollButton();
-
-			History.init(true);
-			ExcludeUtil.checkShowAllExcluded(bgList, $(`#pagecontent`));
+			dataProps: ["background"]
 		});
-}
 
-function handleBrew (homebrew) {
-	addBackgrounds(homebrew);
-	return Promise.resolve();
-}
+		this._sourceFilter = sourceFilter;
+		this._skillFilter = skillFilter;
+		this._toolFilter = toolFilter;
+		this._languageFilter = languageFilter;
+	}
 
-let bgList = [];
-let bgI = 0;
-function addBackgrounds (data) {
-	if (!data.background || !data.background.length) return;
-
-	bgList = bgList.concat(data.background);
-
-	const bgTable = $("ul.backgrounds");
-	let tempString = "";
-	for (; bgI < bgList.length; bgI++) {
-		const bg = bgList[bgI];
-		if (ExcludeUtil.isExcluded(bg.name, "background", bg.source)) continue;
-
-		const skillDisplay = EntryRenderer.background.getSkillSummary(bg.skillProficiencies, true, bg._fSkills = []);
-		EntryRenderer.background.getToolSummary(bg.toolProficiencies, true, bg._fTools = []);
-		EntryRenderer.background.getLanguageSummary(bg.languageProficiencies, true, bg._fLangs = []);
-
-		// populate table
-		tempString +=
-			`<li class="row" ${FLTR_ID}="${bgI}" onclick="ListUtil.toggleSelected(event, this)" oncontextmenu="ListUtil.openContextMenu(event, this)">
-				<a id="${bgI}" href="#${UrlUtil.autoEncodeHash(bg)}" title="${bg.name}">
-					<span class="name col-4">${bg.name.replace("Variant ", "")}</span>
-					<span class="skills col-6">${skillDisplay}</span>
-					<span class="source col-2 text-align-center ${Parser.sourceJsonToColor(bg.source)}" title="${Parser.sourceJsonToFull(bg.source)}">${Parser.sourceJsonToAbv(bg.source)}</span>
-					
-					<span class="uniqueid hidden">${bg.uniqueId ? bg.uniqueId : bgI}</span>
-				</a>
-			</li>`;
+	getListItem (bg, bgI) {
+		const skillDisplay = Renderer.background.getSkillSummary(bg.skillProficiencies, true, bg._fSkills = []);
+		Renderer.background.getToolSummary(bg.toolProficiencies, true, bg._fTools = []);
+		Renderer.background.getLanguageSummary(bg.languageProficiencies, true, bg._fLangs = []);
+		bg._fMisc = bg.srd ? ["SRD"] : [];
 
 		// populate filters
-		sourceFilter.addIfAbsent(bg.source);
-		skillFilter.addIfAbsent(bg._fSkills);
-		toolFilter.addIfAbsent(bg._fTools);
-		languageFilter.addIfAbsent(bg._fLangs);
-	}
-	const lastSearch = ListUtil.getSearchTermAndReset(list);
-	bgTable.append(tempString);
+		this._sourceFilter.addItem(bg.source);
+		this._skillFilter.addItem(bg._fSkills);
+		this._toolFilter.addItem(bg._fTools);
+		this._languageFilter.addItem(bg._fLangs);
 
-	// sort filters
-	sourceFilter.items.sort(SortUtil.ascSort);
-	skillFilter.items.sort(SortUtil.ascSort);
-	toolFilter.items.sort(SortUtil.ascSort);
-	languageFilter.items.sort(SortUtil.ascSort);
+		const eleLi = document.createElement("li");
+		eleLi.className = "row";
 
-	list.reIndex();
-	if (lastSearch) list.search(lastSearch);
-	list.sort("name");
-	filterBox.render();
-	handleFilterChange();
+		const name = bg.name.replace("Variant ", "");
+		const hash = UrlUtil.autoEncodeHash(bg);
+		const source = Parser.sourceJsonToAbv(bg.source);
 
-	ListUtil.setOptions({
-		itemList: bgList,
-		getSublistRow: getSublistItem,
-		primaryLists: [list]
-	});
-	ListUtil.bindPinButton();
-	EntryRenderer.hover.bindPopoutButton(bgList);
-	UrlUtil.bindLinkExportButton(filterBox);
-	ListUtil.bindDownloadButton();
-	ListUtil.bindUploadButton();
-}
+		eleLi.innerHTML = `<a href="#${hash}" class="lst--border">
+			<span class="bold col-4 pl-0">${name}</span>
+			<span class="col-6">${skillDisplay}</span>
+			<span class="col-2 text-center ${Parser.sourceJsonToColor(bg.source)}" title="${Parser.sourceJsonToFull(bg.source)} pr-0" ${BrewUtil.sourceJsonToStyle(bg.source)}>${source}</span>
+		</a>`;
 
-function handleFilterChange () {
-	const f = filterBox.getValues();
-	list.filter(function (item) {
-		const bg = bgList[$(item.elm).attr(FLTR_ID)];
-		return filterBox.toDisplay(
-			f,
-			bg.source,
-			bg._fSkills,
-			bg._fTools,
-			bg._fLangs
+		const listItem = new ListItem(
+			bgI,
+			eleLi,
+			name,
+			{
+				hash,
+				source,
+				skills: skillDisplay,
+				uniqueId: bg.uniqueId || bgI
+			}
 		);
-	});
-	FilterBox.nextIfHidden(bgList);
-}
 
-function getSublistItem (bg, pinId) {
-	return `
-		<li class="row" ${FLTR_ID}="${pinId}" oncontextmenu="ListUtil.openSubContextMenu(event, this)">
-			<a href="#${UrlUtil.autoEncodeHash(bg)}" title="${bg.name}">
-				<span class="name col-4">${bg.name}</span>
-				<span class="name col-8">${EntryRenderer.background.getSkillSummary(bg.skillProficiencies || [], true)}</span>
-				<span class="id hidden">${pinId}</span>
-			</a>
-		</li>
-	`;
-}
+		eleLi.addEventListener("click", (evt) => this._list.doSelect(listItem, evt));
+		eleLi.addEventListener("contextmenu", (evt) => ListUtil.openContextMenu(evt, this._list, listItem));
 
-function loadhash (id) {
-	renderer.setFirstSection(true);
-	const $pgContent = $("#pagecontent").empty();
-	const bg = bgList[id];
-
-	function buildStatsTab () {
-		const renderStack = [];
-		const entryList = {type: "entries", entries: bg.entries};
-		renderer.recursiveEntryRender(entryList, renderStack);
-
-		$pgContent.append(`
-			${EntryRenderer.utils.getBorderTr()}
-			${EntryRenderer.utils.getNameTr(bg)}
-			<tr><td class="divider" colspan="6"><div></div></td></tr>
-			<tr class="text"><td colspan="6">${renderStack.join("")}</td></tr>
-			${EntryRenderer.utils.getPageTr(bg)}
-			${EntryRenderer.utils.getBorderTr()}
-		`);
+		return listItem;
 	}
 
-	const traitTab = EntryRenderer.utils.tabButton(
-		"Traits",
-		() => {},
-		buildStatsTab
-	);
+	handleFilterChange () {
+		const f = this._filterBox.getValues();
+		this._list.filter(item => {
+			const bg = this._dataList[item.ix];
+			return this._filterBox.toDisplay(
+				f,
+				bg.source,
+				bg._fSkills,
+				bg._fTools,
+				bg._fLangs,
+				bg._fMisc
+			);
+		});
+		FilterBox.selectFirstVisible(this._dataList);
+	}
 
-	const infoTab = EntryRenderer.utils.tabButton(
-		"Info",
-		() => {},
-		() => {
-			function get$Tr () {
-				return $(`<tr class="text">`);
+	getSublistItem (bg, pinId) {
+		const name = bg.name.replace("Variant ", "");
+		const hash = UrlUtil.autoEncodeHash(bg);
+		const skills = Renderer.background.getSkillSummary(bg.skillProficiencies || [], true);
+
+		const $ele = $$`<li class="row">
+			<a href="#${hash}" class="lst--border">
+				<span class="bold col-4 pl-0">${name}</span>
+				<span class="col-8 pr-0">${skills}</span>
+			</a>
+		</li>`
+			.contextmenu(evt => ListUtil.openSubContextMenu(evt, listItem));
+
+		const listItem = new ListItem(
+			pinId,
+			$ele,
+			name,
+			{
+				hash,
+				source: Parser.sourceJsonToAbv(bg.source),
+				skills
 			}
-			function get$Td () {
-				return $(`<td colspan="6" class="text">`);
-			}
+		);
+		return listItem;
+	}
 
-			$pgContent.append(EntryRenderer.utils.getBorderTr());
-			$pgContent.append(EntryRenderer.utils.getNameTr(bg));
-			let $tr = get$Tr();
-			let $td = get$Td().appendTo($tr);
-			$pgContent.append($tr);
-			$pgContent.append(EntryRenderer.utils.getBorderTr());
+	doLoadHash (id) {
+		this._renderer.setFirstSection(true);
+		const $pgContent = $("#pagecontent").empty();
+		const bg = this._dataList[id];
 
-			DataUtil.loadJSON(JSON_FLUFF_URL).then((data) => {
-				const baseFluff = data.background.find(it => it.name.toLowerCase() === bg.name.toLowerCase() && it.source.toLowerCase() === bg.source.toLowerCase());
-				if (bg.fluff && bg.fluff.entries) { // override; for homebrew usage only
-					renderer.setFirstSection(true);
-					$td.append(renderer.renderEntry({type: "section", entries: bg.fluff.entries}));
-				} else if (baseFluff && baseFluff.entries) {
-					renderer.setFirstSection(true);
-					$td.append(renderer.renderEntry({type: "section", entries: baseFluff.entries}));
-				} else {
-					$td.empty();
-					$td.append(HTML_NO_INFO);
-				}
-			});
-		}
-	);
-	EntryRenderer.utils.bindTabButtons(traitTab, infoTab);
+		const buildStatsTab = () => {
+			$pgContent.append(RenderBackgrounds.$getRenderedBackground(bg));
+		};
 
-	ListUtil.updateSelected();
+		const buildFluffTab = (isImageTab) => {
+			return Renderer.utils.pBuildFluffTab(
+				isImageTab,
+				$pgContent,
+				bg,
+				(fluffJson) => bg.fluff || fluffJson.background.find(it => it.name === bg.name && it.source === bg.source),
+				this._dataSourcefluff,
+				() => true
+			);
+		};
+
+		const traitTab = Renderer.utils.tabButton(
+			"Traits",
+			() => {},
+			buildStatsTab
+		);
+
+		const infoTab = Renderer.utils.tabButton(
+			"Info",
+			() => {},
+			buildFluffTab
+		);
+		const picTab = Renderer.utils.tabButton(
+			"Images",
+			() => {},
+			buildFluffTab.bind(null, true)
+		);
+		Renderer.utils.bindTabButtons(traitTab, infoTab, picTab);
+
+		ListUtil.updateSelected();
+	}
+
+	doLoadSubHash (sub) {
+		sub = this._filterBox.setFromSubHashes(sub);
+		ListUtil.setFromSubHashes(sub);
+	}
 }
 
-function loadsub (sub) {
-	filterBox.setFromSubHashes(sub);
-	ListUtil.setFromSubHashes(sub);
-}
+const backgroundsPage = new BackgroundPage();
+window.addEventListener("load", () => backgroundsPage.pOnLoad());

@@ -1,7 +1,10 @@
+"use strict";
+
 class Blacklist {
 	static getDisplayCategory (cat) {
 		if (cat === "variantrule") return "Variant Rule";
 		if (cat === "optionalfeature") return "Optional Feature";
+		if (cat === "variant") return "Magic Item Variant";
 		return cat.uppercaseFirst();
 	}
 
@@ -15,22 +18,26 @@ class Blacklist {
 		ExcludeUtil.getList()
 			.sort((a, b) => SortUtil.ascSort(a.source, b.source) || SortUtil.ascSort(a.category, b.category) || SortUtil.ascSort(a.name, b.name))
 			.forEach(({name, category, source}) => Blacklist._addListItem(name, category, source));
+		Blacklist._list.init();
+		Blacklist._list.update();
 	}
 
-	static initialise () {
-		Blacklist._list = new List("listcontainer", {
-			valueNames: ["id", "source", "category", "name"],
-			listClass: "blacklist",
-			item: `<li class="row no-click"><span class="id hidden"></span><span class="source col-3"></span><span class="category col-3"></span><span class="name col-3"></span><span class="actions col-3 text-align-center"></span></li>`
+	static async pInitialise () {
+		const $iptSearch = $(`#search`);
+		Blacklist._list = new List({
+			$iptSearch,
+			$wrpList: $(`.blacklist`),
+			isUseJquery: true
 		});
 		Blacklist._listId = 1;
-		ListUtil.bindEscapeKey(Blacklist._list, $(`#search`));
+		ListUtil.bindEscapeKey(Blacklist._list, $iptSearch);
 
 		const FILES = [
 			"backgrounds.json",
 			"cultsboons.json",
 			"deities.json",
 			"feats.json",
+			"magicvariants.json",
 			"optionalfeatures.json",
 			"objects.json",
 			"psionics.json",
@@ -45,103 +52,112 @@ class Blacklist {
 		const $selName = $(`#bl-name`);
 
 		const data = {};
-		function isFilteredKey (k) {
-			return k === "_meta";
-		}
 
 		function mergeData (fromRec) {
-			Object.keys(fromRec).filter(it => !isFilteredKey(it)).forEach(k => data[k] ? data[k] = data[k].concat(fromRec[k]) : data[k] = fromRec[k])
+			Object.keys(fromRec).filter(it => !Blacklist.IGNORED_CATEGORIES.has(it))
+				.forEach(k => data[k] ? data[k] = data[k].concat(fromRec[k]) : data[k] = fromRec[k])
 		}
 
-		DataUtil.loadJSON(`data/bestiary/index.json`)
-			.then(index => Promise.all(Object.values(index).map(f => DataUtil.loadJSON(`data/bestiary/${f}`))))
-			.then(monData => {
-				monData.forEach(d => {
-					mergeData(d);
+		// LOAD DATA ===============================================================================
+		// bestiary
+		mergeData({monster: await DataUtil.monster.pLoadAll()});
+
+		// spells
+		mergeData({spell: await DataUtil.spell.pLoadAll()});
+
+		// classes
+		const classData = await DataUtil.class.loadJSON();
+		classData.class.forEach(c => (c.subclasses || []).forEach(sc => sc.class = c.name));
+		classData.subclass = classData.subclass || [];
+		classData.class.forEach(c => classData.subclass = classData.subclass.concat(c.subclasses || []));
+		mergeData(classData);
+
+		// everything else
+		const promises = FILES.map(url => DataUtil.loadJSON(`data/${url}`));
+		promises.push(async () => ({item: await Renderer.items.pBuildList({isAddGroups: true})}));
+		const contentData = await Promise.all(promises);
+		contentData.forEach(d => {
+			if (d.race) d.race = Renderer.race.mergeSubraces(d.race);
+			if (d.variant) d.variant.forEach(it => it.source = it.source || it.inherits.source);
+			mergeData(d);
+		});
+
+		// PROCESS DATA ============================================================================
+		const sourceSet = new Set();
+		const catSet = new Set();
+		Object.keys(data).forEach(cat => {
+			catSet.add(cat);
+			const arr = data[cat];
+			arr.forEach(it => sourceSet.has(it.source) || sourceSet.add(it.source));
+		});
+
+		[...sourceSet]
+			.sort((a, b) => SortUtil.ascSort(Parser.sourceJsonToFull(a), Parser.sourceJsonToFull(b)))
+			.forEach(source => $selSource.append(`<option value="${source}">${Parser.sourceJsonToFull(source)}</option>`));
+
+		[...catSet]
+			.sort((a, b) => SortUtil.ascSort(Blacklist.getDisplayCategory(a), Blacklist.getDisplayCategory(b)))
+			.forEach(cat => $selCategory.append(`<option value="${cat}">${Blacklist.getDisplayCategory(cat)}</option>`));
+
+		function onSelChange () {
+			function populateName (arr, cat) {
+				const copy = cat === "subclass"
+					? arr.map(it => ({name: it.name, source: it.source, class: it.class})).sort((a, b) => SortUtil.ascSort(a.class, b.class) || SortUtil.ascSort(a.name, b.name) || SortUtil.ascSort(a.source, b.source))
+					: arr.map(({name, source}) => ({name, source})).sort((a, b) => SortUtil.ascSort(a.name, b.name) || SortUtil.ascSort(a.source, b.source));
+				const dupes = new Set();
+				let temp = "";
+				copy.forEach((it, i) => {
+					temp += `<option value="${it.name}|${it.source}">${cat === "subclass" ? `${it.class}: ` : ""}${it.name}${(dupes.has(it.name) || (copy[i + 1] && copy[i + 1].name === it.name)) ? ` (${Parser.sourceJsonToAbv(it.source)})` : ""}</option>`;
+					dupes.add(it.name);
 				});
-				Promise.resolve();
-			}).then(() => DataUtil.loadJSON(`data/spells/index.json`))
-			.then(index => Promise.all(Object.values(index).map(f => DataUtil.loadJSON(`data/spells/${f}`))))
-			.then(spellData => {
-				spellData.forEach(d => {
-					mergeData(d);
-				});
-				Promise.resolve();
-			}).then(() => DataUtil.class.loadJSON())
-			.then(classData => {
-				classData.class.forEach(c => c.subclasses.forEach(sc => sc.class = c.name));
-				classData.subclass = classData.subclass || [];
-				classData.class.forEach(c => classData.subclass = classData.subclass.concat(c.subclasses));
-				mergeData(classData);
-				Promise.resolve();
-			}).then(() => {
-				const promises = FILES.map(url => DataUtil.loadJSON(`data/${url}`));
-				promises.push(EntryRenderer.item.promiseData({}, true));
-				return Promise.all(promises).then(retData => {
-					retData.forEach(d => {
-						if (d.race) d.race = EntryRenderer.race.mergeSubraces(d.race);
-						mergeData(d);
-					});
-					const sourceSet = new Set();
-					const catSet = new Set();
-					Object.keys(data).forEach(cat => {
-						catSet.has(cat) || catSet.add(cat);
-						const arr = data[cat];
-						arr.forEach(it => sourceSet.has(it.source) || sourceSet.add(it.source));
-					});
+				$selName.append(temp);
+			}
 
-					[...sourceSet]
-						.sort((a, b) => SortUtil.ascSort(Parser.sourceJsonToFull(a), Parser.sourceJsonToFull(b)))
-						.forEach(source => $selSource.append(`<option value="${source}">${Parser.sourceJsonToFull(source)}</option>`));
+			const cat = $selCategory.val();
+			$selName.empty();
+			$selName.append(`<option value="*">*</option>`);
+			if (cat !== "*") {
+				const source = $selSource.val();
+				if (source === "*") populateName(data[cat], cat);
+				else populateName(data[cat].filter(it => it.source === source), cat);
+			}
+		}
 
-					[...catSet]
-						.sort((a, b) => SortUtil.ascSort(Blacklist.getDisplayCategory(a), Blacklist.getDisplayCategory(b)))
-						.forEach(cat => $selCategory.append(`<option value="${cat}">${Blacklist.getDisplayCategory(cat)}</option>`));
+		$selSource.change(onSelChange);
+		$selCategory.change(onSelChange);
 
-					function onSelChange () {
-						function populateName (arr, cat) {
-							const copy = cat === "subclass"
-								? arr.map(it => ({name: it.name, source: it.source, class: it.class})).sort((a, b) => SortUtil.ascSort(a.class, b.class) || SortUtil.ascSort(a.name, b.name) || SortUtil.ascSort(a.source, b.source))
-								: arr.map(({name, source}) => ({name, source})).sort((a, b) => SortUtil.ascSort(a.name, b.name) || SortUtil.ascSort(a.source, b.source));
-							const dupes = new Set();
-							let temp = "";
-							copy.forEach((it, i) => {
-								temp += `<option value="${it.name}|${it.source}">${cat === "subclass" ? `${it.class}: ` : ""}${it.name}${(dupes.has(it.name) || (copy[i + 1] && copy[i + 1].name === it.name)) ? ` (${Parser.sourceJsonToAbv(it.source)})` : ""}</option>`;
-								dupes.add(it.name);
-							});
-							$selName.append(temp);
-						}
+		Blacklist._renderList();
 
-						const cat = $selCategory.val();
-						$selName.empty();
-						$selName.append(`<option value="*">*</option>`);
-						if (cat !== "*") {
-							const source = $selSource.val();
-							if (source === "*") populateName(data[cat], cat);
-							else populateName(data[cat].filter(it => it.source === source), cat);
-						}
-					}
-
-					$selSource.change(onSelChange);
-					$selCategory.change(onSelChange);
-
-					Blacklist._renderList();
-
-					const $page = $(`.bodyContent`);
-					$page.find(`.loading`).prop("disabled", false);
-					$page.find(`.loading-temp`).remove();
-				})
-			});
+		const $page = $(`#main_content`);
+		$page.find(`.loading`).prop("disabled", false);
+		$page.find(`.loading-temp`).remove();
 	}
 
 	static _addListItem (name, category, source) {
 		const display = Blacklist.getDisplayValues(category, source);
-		const added = Blacklist._list.add([
-			{id: Blacklist._listId++, name: name, category: display.displayCategory, source: display.displaySource}
-		]);
-		$(`<button class="btn btn-xs btn-danger">Remove</button>`).click(() => {
-			Blacklist.pRemove(name, category, source);
-		}).appendTo($(added[0].elm).find(`.actions`));
+
+		const id = Blacklist._listId++;
+
+		const $btnRemove = $(`<button class="btn btn-xxs btn-danger m-1">Remove</button>`)
+			.click(() => {
+				Blacklist.pRemove(id, name, category, source);
+			});
+
+		const $ele = $$`<li class="row no-click flex-v-center lst--border">
+			<span class="col-3">${source}</span>
+			<span class="col-3">${display.displayCategory}</span>
+			<span class="bold col-3">${name}</span>
+			<span class="col-3 text-center">${$btnRemove}</span>
+		</li>`;
+
+		const listItem = new ListItem(
+			id,
+			$ele,
+			name,
+			{category: display.displayCategory}
+		);
+
+		Blacklist._list.addItem(listItem);
 	}
 
 	static async add () {
@@ -157,6 +173,7 @@ class Blacklist {
 
 		if (await ExcludeUtil.pAddExclude(name, category, source)) {
 			Blacklist._addListItem(name, category, source);
+			Blacklist._list.update();
 		}
 	}
 
@@ -167,18 +184,15 @@ class Blacklist {
 
 			if (await ExcludeUtil.pAddExclude("*", "*", val)) {
 				Blacklist._addListItem("*", "*", val);
+				Blacklist._list.update();
 			}
 		});
 	}
 
-	static async pRemove (name, category, source) {
+	static async pRemove (ix, name, category, source) {
 		await ExcludeUtil.pRemoveExclude(name, category, source);
-		const display = Blacklist.getDisplayValues(category, source);
-		// List JS doesn't support matching by multiple fields...
-		Blacklist._list.items
-			.filter(it => it.values().name === name && it.values().category === display.displayCategory && it.values().source === display.displaySource)
-			.map(it => it.values().id)
-			.forEach(id => Blacklist._list.remove("id", id));
+		Blacklist._list.removeItem(ix);
+		Blacklist._list.update();
 	}
 
 	static export () {
@@ -196,14 +210,12 @@ class Blacklist {
 				const json = JSON.parse(text);
 
 				// clear list display
-				$(".blacklist").empty();
-				Blacklist._list.reIndex();
+				Blacklist._list.removeAllItems();
+				Blacklist._list.update();
 
 				// update storage
 				if (!additive) await ExcludeUtil.pSetList(json.blacklist || []);
 				else await ExcludeUtil.pSetList(ExcludeUtil.getList().concat(json.blacklist || []));
-
-				await BrewUtil.pDoHandleBrewJson(json, "NO_PAGE");
 
 				// render list display
 				Blacklist._renderList();
@@ -222,12 +234,16 @@ class Blacklist {
 
 	static async pReset () {
 		await ExcludeUtil.pResetExcludes();
-		$(".blacklist").empty();
-		Blacklist._list.reIndex();
+		Blacklist._list.removeAllItems();
+		Blacklist._list.update();
 	}
 }
+Blacklist.IGNORED_CATEGORIES = new Set([
+	"_meta",
+	"linkedLootTables"
+]);
 
 window.addEventListener("load", async () => {
 	await ExcludeUtil.pInitialise();
-	Blacklist.initialise();
+	Blacklist.pInitialise();
 });
